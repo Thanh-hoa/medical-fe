@@ -6,8 +6,16 @@ export interface JsonResponse<T> {
 
 export interface PagedResponse<T> {
   items: T[]
-  page: number
+  currentPage: number
+  page?: number
   limit: number
   totalItems: number
-  totalPages: number
+  totalPage: number
+  totalPages?: number
+}
+
+export interface UploadMediaResponse {
+  path: string
+  fileName: string
+  extensionFile: string
 }

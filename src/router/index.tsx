@@ -1,7 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import AccountListPage from '../pages/account/AccountListPage'
+import ProfilePage from '../pages/account/ProfilePage'
 import LoginPage from '../pages/auth/LoginPage'
+import RegisterPage from '../pages/auth/RegisterPage'
+import ValidateTokenPage from '../pages/auth/ValidateTokenPage'
 import DashboardPage from '../pages/dashboard/DashboardPage'
 import MedicalRecordApprovalPage from '../pages/medical-record/MedicalRecordApprovalPage'
 import MedicalRecordDetailPage from '../pages/medical-record/MedicalRecordDetailPage'
@@ -19,6 +22,14 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
+    path: '/register',
+    element: <RegisterPage />,
+  },
+  {
+    path: '/account/validate-token',
+    element: <ValidateTokenPage />,
+  },
+  {
     element: <PrivateRoute />,
     children: [
       {
@@ -29,6 +40,7 @@ export const router = createBrowserRouter([
             element: <PermissionRoute permission="dashboard:view" />,
             children: [{ path: '/dashboard', element: <DashboardPage /> }],
           },
+          { path: '/profile', element: <ProfilePage /> },
           {
             element: <PermissionRoute permission="medical-records:view" />,
             children: [
@@ -41,7 +53,7 @@ export const router = createBrowserRouter([
             children: [{ path: '/medical-records/upload', element: <MedicalRecordUploadPage /> }],
           },
           {
-            element: <PermissionRoute permission="medical-records-approval:view" />,
+            element: <PermissionRoute permission="medical-records-approval:create" />,
             children: [{ path: '/medical-records-approval', element: <MedicalRecordApprovalPage /> }],
           },
           {

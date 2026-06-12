@@ -1,7 +1,13 @@
 import type { AxiosResponse } from 'axios'
 import { apiClient } from './axios'
 import type { JsonResponse, PagedResponse } from '../types/common.types'
-import type { Patient, PatientListFilters, PatientWithRecords, UpsertPatientPayload } from '../types/patient.types'
+import type {
+  Patient,
+  PatientListFilters,
+  PatientWithRecords,
+  UpdatePatientPayload,
+  UpsertPatientPayload,
+} from '../types/patient.types'
 
 export const patientApi = {
   list(params: PatientListFilters): Promise<AxiosResponse<JsonResponse<PagedResponse<Patient>>>> {
@@ -13,7 +19,7 @@ export const patientApi = {
   create(payload: UpsertPatientPayload): Promise<AxiosResponse<JsonResponse<Patient>>> {
     return apiClient.post('/patient/create', payload)
   },
-  update(id: number, payload: UpsertPatientPayload): Promise<AxiosResponse<JsonResponse<Patient>>> {
+  update(id: number, payload: UpdatePatientPayload): Promise<AxiosResponse<JsonResponse<Patient>>> {
     return apiClient.put(`/patient/update/${id}`, payload)
   },
 }

@@ -19,6 +19,14 @@ const menuIconMap: Record<string, typeof LayoutDashboard> = {
   'patient-search': Users,
 }
 
+const menuLabelMap: Record<string, string> = {
+  dashboard: 'Bảng điều khiển',
+  accounts: 'Quản lý tài khoản',
+  'medical-records': 'Hồ sơ bệnh án',
+  'medical-records-approval': 'Phê duyệt bệnh án',
+  'patient-search': 'Quản lý bệnh nhân',
+}
+
 function RolePill({ role }: { role: string | null }) {
   const label = role ? role.toUpperCase() : 'UNKNOWN'
 
@@ -41,7 +49,7 @@ export default function MainLayout() {
               <UserSquare2 size={22} />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Ho so so</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Hồ sơ số</p>
               <h1 className="mt-1 text-xl font-semibold text-white">MED-OCR</h1>
             </div>
           </div>
@@ -67,7 +75,7 @@ export default function MainLayout() {
                     }
                   >
                     <Icon size={18} />
-                    <span>{item.label}</span>
+                    <span>{menuLabelMap[item.key] ?? item.label}</span>
                   </NavLink>
                 )
               })}
@@ -77,8 +85,8 @@ export default function MainLayout() {
 
         <div className="border-t border-white/10 p-5">
           <div className="rounded-3xl bg-white/5 p-4">
-            <p className="text-sm font-medium text-white">{user?.name ?? user?.email ?? 'Chua co ho so'}</p>
-            <p className="mt-1 text-sm text-slate-400">{user?.email ?? 'Khong co email'}</p>
+            <p className="text-sm font-medium text-white">{user?.name ?? user?.email ?? 'Chưa có hồ sơ'}</p>
+            <p className="mt-1 text-sm text-slate-400">{user?.email ?? 'Không có email'}</p>
             <div className="mt-4">
               <RolePill role={role} />
             </div>

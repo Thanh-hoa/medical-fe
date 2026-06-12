@@ -38,6 +38,11 @@ export default function Header() {
             menu={{
               items: [
                 {
+                  key: 'profile',
+                  icon: <UserRound size={16} />,
+                  label: 'Hồ sơ cá nhân',
+                },
+                {
                   key: 'logout',
                   danger: true,
                   icon: <LogOut size={16} />,
@@ -45,6 +50,9 @@ export default function Header() {
                 },
               ],
               onClick: ({ key }) => {
+                if (key === 'profile') {
+                  navigate('/profile')
+                }
                 if (key === 'logout') {
                   void handleLogout()
                 }

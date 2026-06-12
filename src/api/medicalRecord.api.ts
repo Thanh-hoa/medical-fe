@@ -5,7 +5,7 @@ import type {
   MedicalRecordDetail,
   MedicalRecordListFilters,
   MedicalRecordSummary,
-  RejectMedicalRecordPayload,
+  UpdateMedicalRecordDetailPayload,
   UpdateMedicalRecordFieldPayload,
 } from '../types/medicalRecord.types'
 
@@ -23,10 +23,15 @@ export const medicalRecordApi = {
   ): Promise<AxiosResponse<JsonResponse<PagedResponse<MedicalRecordSummary>>>> {
     return apiClient.get('/medical-record/list', { params })
   },
+  pendingReview(
+    params: Omit<MedicalRecordListFilters, 'status' | 'sort_by' | 'order_by'>,
+  ): Promise<AxiosResponse<JsonResponse<PagedResponse<MedicalRecordSummary>>>> {
+    return apiClient.get('/medical-record/pending-review', { params })
+  },
   detail(id: number | string): Promise<AxiosResponse<JsonResponse<MedicalRecordDetail>>> {
     return apiClient.get(`/medical-record/${id}`)
   },
-  updateDetail(payload: MedicalRecordDetail): Promise<AxiosResponse<JsonResponse<MedicalRecordDetail>>> {
+  updateDetail(payload: UpdateMedicalRecordDetailPayload): Promise<AxiosResponse<JsonResponse<MedicalRecordDetail>>> {
     return apiClient.put('/medical-record/update-detail', payload)
   },
   updateField(payload: UpdateMedicalRecordFieldPayload): Promise<AxiosResponse<JsonResponse<null>>> {
@@ -37,9 +42,6 @@ export const medicalRecordApi = {
   },
   approve(id: number): Promise<AxiosResponse<JsonResponse<MedicalRecordSummary>>> {
     return apiClient.put(`/medical-record/${id}/approve`)
-  },
-  reject(payload: RejectMedicalRecordPayload): Promise<AxiosResponse<JsonResponse<MedicalRecordSummary>>> {
-    return apiClient.put('/medical-record/reject', payload)
   },
   delete(id: number): Promise<AxiosResponse<JsonResponse<null>>> {
     return apiClient.delete(`/medical-record/${id}`)

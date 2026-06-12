@@ -42,7 +42,7 @@ export default function DashboardPage() {
       { queryKey: ['dashboard', 'records'], queryFn: () => medicalRecordApi.list({ page: 1, limit: 1 }).then((r) => r.data.data) },
       {
         queryKey: ['dashboard', 'pending'],
-        queryFn: () => medicalRecordApi.list({ page: 1, limit: 1, status: 'Pending Doctor Review' }).then((r) => r.data.data),
+        queryFn: () => medicalRecordApi.pendingReview({ page: 1, limit: 1 }).then((r) => r.data.data),
       },
       { queryKey: ['dashboard', 'patients'], queryFn: () => patientApi.list({ page: 1, limit: 1 }).then((r) => r.data.data) },
       {
@@ -63,7 +63,7 @@ export default function DashboardPage() {
   return (
     <PageShell
       title="Dashboard"
-      description="Tổng quan nhanh các đối tượng chính trong hệ thống. Số liệu dùng endpoint danh sách hiện có của backend."
+      description="Tổng quan nhanh các đối tượng chính trong hệ thống. Số liệu dùng các endpoint danh sách hiện có của backend."
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ key, title, icon: Icon, gradient }) => (
@@ -96,12 +96,12 @@ export default function DashboardPage() {
             <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm font-semibold text-slate-500">Vai trò hiện tại</p>
               <p className="mt-2 text-2xl font-semibold text-slate-950">{role ?? 'Chưa xác định'}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-500">Role được parse từ JWT `authorities` để điều khiển route và sidebar.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">Vai trò được lấy từ hồ sơ người dùng và menu phân quyền từ backend.</p>
             </article>
             <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm font-semibold text-slate-500">Trạng thái ưu tiên</p>
               <p className="mt-2 text-2xl font-semibold text-slate-950">{totals.pending}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-500">Số lượng bệnh án ở trạng thái `Pending Doctor Review` cần bác sĩ xử lý.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">Số lượng bệnh án ở trạng thái PENDING_DOCTOR_REVIEW cần bác sĩ xử lý.</p>
             </article>
           </div>
         </section>
@@ -111,7 +111,7 @@ export default function DashboardPage() {
           <div className="mt-6">
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Backend chưa có endpoint dashboard chuyên biệt, nên màn này đang dựng từ các endpoint list."
+              description="Backend chưa có endpoint dashboard chuyên biệt, nên màn này đang dựng từ các endpoint danh sách."
             />
           </div>
         </section>
