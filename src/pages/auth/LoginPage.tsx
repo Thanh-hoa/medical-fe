@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Input, message } from 'antd'
 import { ShieldCheck, Stethoscope, UploadCloud } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../../api/auth.api'
 import { accountApi } from '../../api/account.api'
 import { configApi } from '../../api/config.api'
@@ -9,9 +9,9 @@ import { useAuthStore } from '../../store/auth.store'
 import type { LoginPayload } from '../../types/auth.types'
 
 const features = [
-  { icon: UploadCloud, title: 'OCR upload', text: 'Kéo thả ảnh/PDF, theo dõi xử lý và chỉnh sửa dữ liệu OCR ngay trên web.' },
-  { icon: Stethoscope, title: 'Doctor review', text: 'Bác sĩ duyệt, từ chối có lý do và xử lý các ca chờ duyệt tập trung.' },
-  { icon: ShieldCheck, title: 'RBAC rõ ràng', text: 'Sidebar, route và action đều bám theo permission thực tế từ JWT.' },
+  { icon: UploadCloud, title: 'Tải hồ sơ OCR', text: 'Kéo thả ảnh hoặc PDF, theo dõi xử lý và chỉnh sửa dữ liệu OCR ngay trên web.' },
+  { icon: Stethoscope, title: 'Bác sĩ phê duyệt', text: 'Bác sĩ kiểm tra, phê duyệt hoặc từ chối bệnh án có lý do rõ ràng.' },
+  { icon: ShieldCheck, title: 'Phân quyền rõ ràng', text: 'Sidebar, route và thao tác bám theo menu phân quyền thực tế từ backend.' },
 ]
 
 export default function LoginPage() {
@@ -49,7 +49,7 @@ export default function LoginPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-500">Medical Frontend Plan</p>
           <h1 className="mt-5 max-w-xl text-5xl font-semibold leading-tight tracking-tight text-slate-950">
-            MED-OCR vận hành quy trình bệnh án số từ upload đến phê duyệt.
+            MED-OCR vận hành quy trình bệnh án số từ tải lên đến phê duyệt.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
             Giao diện tập trung cho nhân viên, bác sĩ và quản trị viên, ưu tiên tốc độ kiểm tra dữ liệu OCR và tính minh bạch của phân quyền.
@@ -79,7 +79,7 @@ export default function LoginPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-500">Đăng nhập</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">Truy cập hệ thống MED-OCR</h2>
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              Dùng tài khoản backend hiện tại để đăng nhập và lấy permissions trực tiếp từ JWT.
+              Dùng tài khoản backend hiện tại để đăng nhập, lấy hồ sơ cá nhân và menu phân quyền.
             </p>
           </div>
 
@@ -104,6 +104,10 @@ export default function LoginPage() {
               Đăng nhập
             </Button>
           </Form>
+
+          <Link to="/register" className="mt-5 block text-center text-sm font-medium text-indigo-600">
+            Tạo tài khoản mới
+          </Link>
         </div>
       </section>
     </main>

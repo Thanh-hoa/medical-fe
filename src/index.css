@@ -16,7 +16,6 @@
   --status-extracted: #3b82f6;
   --status-pending: #f59e0b;
   --status-approved: #10b981;
-  --status-rejected: #ef4444;
   font-family: Inter, system-ui, sans-serif;
   color: #0f172a;
   background: var(--color-bg);

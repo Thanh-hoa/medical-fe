@@ -1,12 +1,10 @@
-import type { AppRole } from './auth.types'
-
 export interface RoleInfo {
   id: number
   name: string
 }
 
 export interface AccountInfo {
-  id: string
+  id: number | string
   name: string | null
   birthday: string | null
   phoneNumber: string | null
@@ -19,22 +17,39 @@ export interface AccountInfo {
   updatedAt: string | null
   gender?: string | null
   roles?: RoleInfo[]
-  permissions?: string[]
 }
 
 export interface AccountListFilters {
   q?: string
   page?: number
   limit?: number
+  sort_by?: string
+  order_by?: 'asc' | 'desc'
 }
 
 export interface UpsertAccountPayload {
-  id?: string
+  id?: number | string
   email: string
-  name?: string
-  phoneNumber?: string
-  birthday?: string
+  name: string
+  phone_number: string
+  birthday?: string | null
   gender?: string
-  photoUrl?: string
-  roles: AppRole[]
+  photo?: string | null
+  roles?: number[]
+  is_active?: boolean
+}
+
+export interface UpdateProfilePayload {
+  name: string
+  phone_number: string
+  birthday?: string | null
+  email: string
+  gender?: string
+  photo?: string | null
+}
+
+export interface RegisterAccountPayload {
+  email: string
+  password: string
+  repeatPassword: string
 }
