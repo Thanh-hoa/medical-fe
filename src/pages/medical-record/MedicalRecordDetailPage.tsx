@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   App,
+  Alert,
   Button,
   Descriptions,
   Form,
@@ -13,7 +14,7 @@ import {
   Tabs,
   Timeline,
 } from 'antd'
-import { CheckCircle2, ClipboardCheck, PencilLine, Send, Trash2 } from 'lucide-react'
+import { CheckCircle2, ClipboardCheck, PencilLine, RotateCcw, Send, Trash2, XCircle } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import PageShell from '../../components/PageShell'
 import StatusBadge from '../../components/StatusBadge'
@@ -135,19 +136,33 @@ export default function MedicalRecordDetailPage() {
   const [diagnosisDraft, setDiagnosisDraft] = useState('')
   const [editOpen, setEditOpen] = useState(false)
   const [editForm] = Form.useForm<EditFormValues>()
+  const [rejectOpen, setRejectOpen] = useState(false)
+  const [rejectForm] = Form.useForm<{ rejectionReason: string }>()
 
   const recordQuery = useQuery({
     enabled: Boolean(id),
     queryKey: ['record', id],
-    queryFn: () => medicalRecordApi.detail(Number(id)).then((response) => response.data.data),
+    queryFn: async () => {
+      const response = await medicalRecordApi.detail(Number(id))
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      return response.data.data
+    },
+  })
+
+  const auditLogsQuery = useQuery({
+    enabled: Boolean(id),
+    queryKey: ['record', id, 'audit-logs'],
+    queryFn: () => medicalRecordApi.auditLogs(Number(id), { page: 1, limit: 20 }).then((response) => response.data.data),
   })
 
   const record = recordQuery.data
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: ['record', id] })
+    await queryClient.invalidateQueries({ queryKey: ['record', id, 'audit-logs'] })
     await queryClient.invalidateQueries({ queryKey: ['medical-records'] })
     await queryClient.invalidateQueries({ queryKey: ['medical-records-approval'] })
+    await queryClient.invalidateQueries({ queryKey: ['notifications'] })
   }
 
   const submitMutation = useMutation({
@@ -166,6 +181,27 @@ export default function MedicalRecordDetailPage() {
       await invalidate()
     },
     onError: (error: any) => message.error(error?.response?.data?.message ?? 'Duyệt thất bại'),
+  })
+
+  const rejectMutation = useMutation({
+    mutationFn: (values: { rejectionReason: string }) =>
+      medicalRecordApi.reject(Number(id), values.rejectionReason),
+    onSuccess: async () => {
+      message.success('Đã từ chối bệnh án')
+      setRejectOpen(false)
+      rejectForm.resetFields()
+      await invalidate()
+    },
+    onError: (error: any) => message.error(error?.response?.data?.message ?? 'Từ chối thất bại'),
+  })
+
+  const resubmitMutation = useMutation({
+    mutationFn: () => medicalRecordApi.resubmit(Number(id)),
+    onSuccess: async () => {
+      message.success('Đã nộp lại bệnh án')
+      await invalidate()
+    },
+    onError: (error: any) => message.error(error?.response?.data?.message ?? 'Nộp lại thất bại'),
   })
 
   const updateDetailMutation = useMutation({
@@ -230,6 +266,8 @@ export default function MedicalRecordDetailPage() {
   const recordStatus = normalizeRecordStatus(record?.status)
   const canSubmit = recordStatus === 'EXTRACTED'
   const canApprove = recordStatus === 'PENDING_DOCTOR_REVIEW' && canApprovePermission
+  const canReject = recordStatus === 'PENDING_DOCTOR_REVIEW' && canApprovePermission
+  const canResubmit = recordStatus === 'REJECTED' && canEdit
   const canOpenEdit = Boolean(record && canEdit && recordStatus !== 'APPROVED')
   const canEditDiagnosisForApproval = Boolean(canApprove)
 
@@ -284,6 +322,17 @@ export default function MedicalRecordDetailPage() {
                 Gửi duyệt
               </Button>
             ) : null}
+            {canResubmit ? (
+              <Popconfirm
+                title="Nộp lại bệnh án?"
+                description="Hồ sơ sẽ quay lại trạng thái chờ bác sĩ duyệt."
+                onConfirm={() => resubmitMutation.mutate()}
+              >
+                <Button type="primary" icon={<RotateCcw size={17} />} loading={resubmitMutation.isPending}>
+                  Nộp lại
+                </Button>
+              </Popconfirm>
+            ) : null}
             {canApprove ? (
               <Popconfirm
                 title="Lưu chẩn đoán và duyệt bệnh án?"
@@ -298,6 +347,11 @@ export default function MedicalRecordDetailPage() {
                   Lưu & duyệt
                 </Button>
               </Popconfirm>
+            ) : null}
+            {canReject ? (
+              <Button danger icon={<XCircle size={17} />} onClick={() => setRejectOpen(true)}>
+                Từ chối
+              </Button>
             ) : null}
             {canDelete ? (
               <Popconfirm title="Xóa vĩnh viễn bệnh án này?" onConfirm={() => deleteMutation.mutate()}>
@@ -333,6 +387,24 @@ export default function MedicalRecordDetailPage() {
             </div>
 
             <div className="p-5">
+              {recordStatus === 'REJECTED' && record.rejectionReason ? (
+                <Alert
+                  className="mb-5"
+                  type="error"
+                  showIcon
+                  message="Lý do từ chối"
+                  description={
+                    <div>
+                      <p>{record.rejectionReason}</p>
+                      {record.rejectedAt ? (
+                        <p className="mt-2 text-xs text-slate-500">
+                          Thời điểm: {new Date(record.rejectedAt).toLocaleString('vi-VN')}
+                        </p>
+                      ) : null}
+                    </div>
+                  }
+                />
+              ) : null}
               <Timeline
                 className="mb-5"
                 items={[
@@ -498,6 +570,36 @@ export default function MedicalRecordDetailPage() {
                       />
                     ),
                   },
+                  {
+                    key: 'audit',
+                    label: 'Nhật ký thao tác',
+                    children: (
+                      <Timeline
+                        pending={auditLogsQuery.isLoading ? 'Đang tải lịch sử...' : false}
+                        items={(auditLogsQuery.data?.items ?? []).map((log) => ({
+                          color: log.action === 'REJECT' ? 'red' : log.action === 'APPROVE' ? 'green' : 'blue',
+                          children: (
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                                <div>
+                                  <p className="font-semibold text-slate-950">{log.actionLabel ?? log.action}</p>
+                                  <p className="text-sm text-slate-500">{log.actorName ?? `Actor #${log.actorId ?? '-'}`}</p>
+                                </div>
+                                <span className="text-xs text-slate-400">
+                                  {new Date(log.createdAt).toLocaleString('vi-VN')}
+                                </span>
+                              </div>
+                              {log.newValue ? (
+                                <pre className="mt-3 max-h-36 overflow-auto rounded-xl bg-slate-950 p-3 text-xs text-slate-100">
+                                  {log.newValue}
+                                </pre>
+                              ) : null}
+                            </div>
+                          ),
+                        }))}
+                      />
+                    ),
+                  },
                 ]}
               />
             </div>
@@ -566,6 +668,33 @@ export default function MedicalRecordDetailPage() {
               <Input.TextArea rows={2} />
             </Form.Item>
           </div>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={rejectOpen}
+        title="Từ chối bệnh án"
+        okText="Xác nhận từ chối"
+        okButtonProps={{ danger: true }}
+        cancelText="Hủy"
+        confirmLoading={rejectMutation.isPending}
+        onCancel={() => setRejectOpen(false)}
+        onOk={async () => {
+          const values = await rejectForm.validateFields()
+          rejectMutation.mutate(values)
+        }}
+      >
+        <Form form={rejectForm} layout="vertical">
+          <Form.Item
+            name="rejectionReason"
+            label="Lý do từ chối"
+            rules={[
+              { required: true, message: 'Nhập lý do từ chối' },
+              { min: 8, message: 'Lý do cần rõ ràng hơn' },
+            ]}
+          >
+            <Input.TextArea rows={5} placeholder="Ví dụ: Thiếu thông tin bệnh nhân, chẩn đoán chưa rõ ràng..." />
+          </Form.Item>
         </Form>
       </Modal>
     </>

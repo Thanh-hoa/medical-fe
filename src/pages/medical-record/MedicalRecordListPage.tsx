@@ -15,6 +15,7 @@ const statusOptions = [
   { value: 'EXTRACTED', label: 'OCR xong, chờ kiểm tra' },
   { value: 'PENDING_DOCTOR_REVIEW', label: 'Chờ bác sĩ duyệt' },
   { value: 'APPROVED', label: 'Đã duyệt' },
+  { value: 'REJECTED', label: 'Bị từ chối' },
 ]
 
 export default function MedicalRecordListPage() {
@@ -41,13 +42,14 @@ export default function MedicalRecordListPage() {
       extracted: items.filter((item) => normalizeRecordStatus(item.status) === 'EXTRACTED').length,
       pending: items.filter((item) => normalizeRecordStatus(item.status) === 'PENDING_DOCTOR_REVIEW').length,
       approved: items.filter((item) => normalizeRecordStatus(item.status) === 'APPROVED').length,
+      rejected: items.filter((item) => normalizeRecordStatus(item.status) === 'REJECTED').length,
     }
   }, [data?.items])
 
   return (
     <PageShell
       title="Hồ sơ bệnh án"
-      description="Theo dõi bệnh án từ lúc OCR xong, kiểm tra dữ liệu, gửi duyệt và hoàn tất phê duyệt."
+      description="Theo dõi bệnh án từ lúc OCR xong, kiểm tra dữ liệu, gửi duyệt, từ chối và nộp lại."
       actions={
         <>
           {canApproval ? (
@@ -69,7 +71,7 @@ export default function MedicalRecordListPage() {
       }
     >
       <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="grid gap-0 border-b border-slate-100 md:grid-cols-3">
+        <div className="grid gap-0 border-b border-slate-100 md:grid-cols-4">
           <div className="border-b border-slate-100 p-5 md:border-r md:border-b-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cần kiểm tra</p>
             <p className="mt-2 text-3xl font-semibold text-blue-600">{totals.extracted}</p>
@@ -78,9 +80,13 @@ export default function MedicalRecordListPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Đang chờ duyệt</p>
             <p className="mt-2 text-3xl font-semibold text-amber-600">{totals.pending}</p>
           </div>
-          <div className="p-5">
+          <div className="border-b border-slate-100 p-5 md:border-r md:border-b-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Đã hoàn tất</p>
             <p className="mt-2 text-3xl font-semibold text-emerald-600">{totals.approved}</p>
+          </div>
+          <div className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Bị từ chối</p>
+            <p className="mt-2 text-3xl font-semibold text-rose-600">{totals.rejected}</p>
           </div>
         </div>
 

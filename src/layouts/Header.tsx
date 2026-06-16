@@ -1,8 +1,9 @@
 import { Avatar, Dropdown } from 'antd'
-import { Bell, ChevronDown, LogOut, UserRound } from 'lucide-react'
+import { ChevronDown, LogOut, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
+import NotificationDrawer from '../components/NotificationDrawer'
 
 export default function Header() {
   const navigate = useNavigate()
@@ -26,12 +27,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="grid size-10 place-items-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
-          >
-            <Bell size={18} />
-          </button>
+          <NotificationDrawer />
 
           <Dropdown
             trigger={['click']}

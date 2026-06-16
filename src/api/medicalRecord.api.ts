@@ -1,5 +1,7 @@
 import type { AxiosResponse } from 'axios'
 import { apiClient } from './axios'
+import { normalizeAuditLogPage } from './auditLog.mapper'
+import type { AuditLog } from '../types/auditLog.types'
 import type { JsonResponse, PagedResponse } from '../types/common.types'
 import type {
   MedicalRecordDetail,
@@ -42,6 +44,25 @@ export const medicalRecordApi = {
   },
   approve(id: number): Promise<AxiosResponse<JsonResponse<MedicalRecordSummary>>> {
     return apiClient.put(`/medical-record/${id}/approve`)
+  },
+  reject(id: number, rejectionReason: string): Promise<AxiosResponse<JsonResponse<MedicalRecordSummary>>> {
+    return apiClient.put(`/medical-record/${id}/reject`, { rejectionReason })
+  },
+  resubmit(id: number): Promise<AxiosResponse<JsonResponse<MedicalRecordSummary>>> {
+    return apiClient.put(`/medical-record/${id}/resubmit`)
+  },
+  async auditLogs(
+    id: number | string,
+    params: { page?: number; limit?: number },
+  ): Promise<AxiosResponse<JsonResponse<PagedResponse<AuditLog>>>> {
+    const response = await apiClient.get<JsonResponse<PagedResponse<unknown>>>(`/medical-record/${id}/audit-logs`, { params })
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        data: normalizeAuditLogPage(response.data.data),
+      },
+    }
   },
   delete(id: number): Promise<AxiosResponse<JsonResponse<null>>> {
     return apiClient.delete(`/medical-record/${id}`)

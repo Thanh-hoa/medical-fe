@@ -1,6 +1,7 @@
 import {
   CheckSquare,
   ClipboardList,
+  History,
   LayoutDashboard,
   Shield,
   UserSquare2,
@@ -13,6 +14,7 @@ import { useAuthStore } from '../store/auth.store'
 
 const menuIconMap: Record<string, typeof LayoutDashboard> = {
   dashboard: LayoutDashboard,
+  'audit-logs': History,
   accounts: Shield,
   'medical-records': ClipboardList,
   'medical-records-approval': CheckSquare,
@@ -21,6 +23,7 @@ const menuIconMap: Record<string, typeof LayoutDashboard> = {
 
 const menuLabelMap: Record<string, string> = {
   dashboard: 'Bảng điều khiển',
+  'audit-logs': 'Nhật ký thao tác',
   accounts: 'Quản lý tài khoản',
   'medical-records': 'Hồ sơ bệnh án',
   'medical-records-approval': 'Phê duyệt bệnh án',
@@ -39,6 +42,7 @@ function RolePill({ role }: { role: string | null }) {
 
 export default function MainLayout() {
   const { menu, user, role } = useAuthStore()
+  const visibleMenu = menu.filter((item) => item.key !== 'webhooks' && item.path !== '/webhooks')
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -59,7 +63,7 @@ export default function MainLayout() {
           <div className="mb-7">
             <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Menu</p>
             <div className="mt-3 space-y-1">
-              {menu.map((item) => {
+              {visibleMenu.map((item) => {
                 const Icon = menuIconMap[item.key] ?? LayoutDashboard
                 return (
                   <NavLink
