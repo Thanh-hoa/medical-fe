@@ -26,6 +26,12 @@ const statusConfig: Record<CanonicalRecordStatus, { label: string; dot: string; 
     bg: 'bg-emerald-50',
     text: 'text-emerald-700',
   },
+  REJECTED: {
+    label: 'Bị từ chối',
+    dot: 'bg-rose-500',
+    bg: 'bg-rose-50',
+    text: 'text-rose-700',
+  },
 }
 
 export default function StatusBadge({ status }: { status: RecordStatus }) {

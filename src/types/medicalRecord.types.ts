@@ -5,6 +5,7 @@ export type CanonicalRecordStatus =
   | 'EXTRACTED'
   | 'PENDING_DOCTOR_REVIEW'
   | 'APPROVED'
+  | 'REJECTED'
 
 export type RecordStatus =
   | CanonicalRecordStatus
@@ -12,6 +13,7 @@ export type RecordStatus =
   | 'Extracted'
   | 'Pending Doctor Review'
   | 'Approved'
+  | 'Rejected'
 
 export function normalizeRecordStatus(status?: string | null): CanonicalRecordStatus {
   const normalized = status?.trim().replaceAll(' ', '_').toUpperCase()
@@ -19,7 +21,8 @@ export function normalizeRecordStatus(status?: string | null): CanonicalRecordSt
   if (
     normalized === 'EXTRACTED' ||
     normalized === 'PENDING_DOCTOR_REVIEW' ||
-    normalized === 'APPROVED'
+    normalized === 'APPROVED' ||
+    normalized === 'REJECTED'
   ) {
     return normalized
   }
@@ -65,6 +68,9 @@ export interface MedicalRecordDetail extends MedicalRecordSummary {
   verifiedAt: string | null
   approvedBy: number | null
   approvedAt: string | null
+  rejectedBy: number | null
+  rejectedAt: string | null
+  rejectionReason: string | null
   extractedData: ExtractedData | null
   labData: LabResult[]
 }
