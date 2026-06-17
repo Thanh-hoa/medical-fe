@@ -48,6 +48,12 @@ export interface UpdateProfilePayload {
   photo?: string | null
 }
 
+export interface ChangePasswordPayload {
+  current_password: string
+  new_password: string
+  repeat_new_password: string
+}
+
 export interface RegisterAccountPayload {
   email: string
   password: string

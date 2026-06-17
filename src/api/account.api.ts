@@ -3,6 +3,7 @@ import { apiClient, publicClient } from './axios'
 import type {
   AccountInfo,
   AccountListFilters,
+  ChangePasswordPayload,
   RegisterAccountPayload,
   UpdateProfilePayload,
   UpsertAccountPayload,
@@ -21,6 +22,9 @@ export const accountApi = {
   },
   updateProfile(payload: UpdateProfilePayload): Promise<AxiosResponse<JsonResponse<AccountInfo>>> {
     return apiClient.put('/account/profile', payload)
+  },
+  changePassword(payload: ChangePasswordPayload): Promise<AxiosResponse<Omit<JsonResponse<never>, 'data'>>> {
+    return apiClient.put('/account/change-password', payload)
   },
   getById(id: number | string): Promise<AxiosResponse<JsonResponse<AccountInfo>>> {
     return apiClient.get(`/account/${id}`)

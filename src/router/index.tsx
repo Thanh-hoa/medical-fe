@@ -8,8 +8,10 @@ import PrivateRoute from './PrivateRoute'
 const AccountListPage = lazy(() => import('../pages/account/AccountListPage'))
 const AuditLogPage = lazy(() => import('../pages/audit-log/AuditLogPage'))
 const ProfilePage = lazy(() => import('../pages/account/ProfilePage'))
+const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage'))
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'))
+const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage'))
 const ValidateTokenPage = lazy(() => import('../pages/auth/ValidateTokenPage'))
 const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage'))
 const MedicalRecordApprovalPage = lazy(() => import('../pages/medical-record/MedicalRecordApprovalPage'))
@@ -43,6 +45,14 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: lazyPage(RegisterPage),
+  },
+  {
+    path: '/forgot-password',
+    element: lazyPage(ForgotPasswordPage),
+  },
+  {
+    path: '/reset-password',
+    element: lazyPage(ResetPasswordPage),
   },
   {
     path: '/account/validate-token',

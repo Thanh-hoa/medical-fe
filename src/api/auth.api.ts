@@ -1,6 +1,12 @@
 import type { AxiosResponse } from 'axios'
 import { apiClient, publicClient } from './axios'
-import type { AuthTokens, LoginPayload, RefreshTokenPayload } from '../types/auth.types'
+import type {
+  AuthTokens,
+  ForgotPasswordPayload,
+  LoginPayload,
+  RefreshTokenPayload,
+  ResetPasswordPayload,
+} from '../types/auth.types'
 import type { JsonResponse } from '../types/common.types'
 
 export const authApi = {
@@ -14,5 +20,11 @@ export const authApi = {
   },
   refreshToken(payload: RefreshTokenPayload): Promise<AxiosResponse<JsonResponse<AuthTokens>>> {
     return publicClient.post('/auth/refresh-token', payload)
+  },
+  forgotPassword(payload: ForgotPasswordPayload): Promise<AxiosResponse<Omit<JsonResponse<never>, 'data'>>> {
+    return publicClient.post('/auth/forgot-password', payload)
+  },
+  resetPassword(payload: ResetPasswordPayload): Promise<AxiosResponse<Omit<JsonResponse<never>, 'data'>>> {
+    return publicClient.post('/auth/reset-password', payload)
   },
 }
