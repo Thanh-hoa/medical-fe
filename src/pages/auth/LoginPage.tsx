@@ -105,6 +105,10 @@ export default function LoginPage() {
             </Button>
           </Form>
 
+          <Link to="/forgot-password" className="mt-4 block text-center text-sm font-semibold text-slate-500 hover:text-indigo-600">
+            Quên mật khẩu?
+          </Link>
+
           <Link to="/register" className="mt-5 block text-center text-sm font-medium text-indigo-600">
             Tạo tài khoản mới
           </Link>

@@ -14,6 +14,16 @@ export interface RefreshTokenPayload {
   refreshToken: string
 }
 
+export interface ForgotPasswordPayload {
+  email: string
+}
+
+export interface ResetPasswordPayload {
+  token: string
+  password: string
+  repeat_password: string
+}
+
 export type AppRole = 'employee' | 'doctor' | 'admin'
 
 export interface PermissionMenuItem {
