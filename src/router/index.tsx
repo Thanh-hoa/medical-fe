@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType } from 'react'
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import DefaultRedirect from './DefaultRedirect'
 import PermissionRoute from './PermissionRoute'
@@ -20,11 +20,12 @@ const MedicalRecordListPage = lazy(() => import('../pages/medical-record/Medical
 const MedicalRecordUploadPage = lazy(() => import('../pages/medical-record/MedicalRecordUploadPage'))
 const PatientListPage = lazy(() => import('../pages/patient/PatientListPage'))
 const PatientSearchPage = lazy(() => import('../pages/patient/PatientSearchPage'))
+const PrescriptionPage = lazy(() => import('../pages/prescription/PrescriptionPage'))
 
 function RouteFallback() {
   return (
     <div className="grid min-h-64 place-items-center">
-      <div className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500" />
+      <div className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#2563EB]" />
     </div>
   )
 }
@@ -35,6 +36,11 @@ function lazyPage(Page: ComponentType) {
       <Page />
     </Suspense>
   )
+}
+
+function PatientSearchRedirect() {
+  const location = useLocation()
+  return <Navigate to={`/patients/detail${location.search}`} replace />
 }
 
 export const router = createBrowserRouter([
@@ -78,6 +84,7 @@ export const router = createBrowserRouter([
             children: [
               { path: '/medical-records', element: lazyPage(MedicalRecordListPage) },
               { path: '/medical-records/:id', element: lazyPage(MedicalRecordDetailPage) },
+              { path: '/medical-records/:id/prescription', element: lazyPage(PrescriptionPage) },
             ],
           },
           {
@@ -91,9 +98,10 @@ export const router = createBrowserRouter([
           {
             element: <PermissionRoute permission="patient-search:view" />,
             children: [
-              { path: '/patient-search', element: lazyPage(PatientSearchPage) },
+              { path: '/patient-search', element: <PatientSearchRedirect /> },
               { path: '/patients', element: lazyPage(PatientListPage) },
-              { path: '/patients/search', element: <Navigate to="/patient-search" replace /> },
+              { path: '/patients/detail', element: lazyPage(PatientSearchPage) },
+              { path: '/patients/search', element: <Navigate to="/patients/detail" replace /> },
             ],
           },
           {

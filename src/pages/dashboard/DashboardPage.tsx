@@ -42,14 +42,14 @@ function MetricCard({
   tone: string
 }) {
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-white/70 bg-white p-5 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.55)]">
+    <article className="group relative overflow-hidden rounded-2xl border border-[#E5EAF1] bg-white p-5 shadow-[0_14px_32px_-28px_rgba(15,23,42,0.36)]">
       <div className={`absolute inset-x-0 top-0 h-1 ${tone}`} />
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-slate-500">{label}</p>
           <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">{value.toLocaleString('vi-VN')}</p>
         </div>
-        <div className="grid size-11 place-items-center rounded-2xl bg-slate-950 text-white transition-transform group-hover:-translate-y-0.5">
+        <div className="grid size-11 place-items-center rounded-xl bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0] transition-transform group-hover:-translate-y-0.5">
           <Icon size={20} />
         </div>
       </div>
@@ -117,36 +117,35 @@ export default function DashboardPage() {
         <Skeleton active paragraph={{ rows: 8 }} />
       ) : (
         <>
-          <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.8)]">
-            <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
-            <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl" />
+          <section className="relative overflow-hidden rounded-3xl border border-[#D7E2F3] bg-white p-6 text-[#0F172A] shadow-[0_18px_42px_-34px_rgba(15,23,42,0.42)]">
+            <div className="absolute inset-y-0 left-0 w-1 bg-[#2563EB]" />
             <div className="relative grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
               <div>
-                <p className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                <p className="inline-flex rounded-full border border-[#E5EAF1] bg-[#EFF6FF] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#2563EB]">
                   Tổng quan trực tiếp
                 </p>
                 <h2 className="mt-5 text-4xl font-bold tracking-tight">Hệ thống đang có {overview.totalRecords} hồ sơ</h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[#64748B]">
                   Hôm nay có {overview.todayUploads} hồ sơ được upload và {overview.todayApprovals} hồ sơ được duyệt. Tỉ lệ hoàn tất hiện tại {reviewRate}%.
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                  <p className="text-sm text-slate-300">Chờ duyệt</p>
-                  <p className="mt-2 text-3xl font-bold text-amber-200">{overview.pendingReviewRecords}</p>
+                <div className="rounded-2xl border border-[#F3D99B] bg-[#FCF1D9] p-4">
+                  <p className="text-sm text-[#9A6B0E]">Chờ duyệt</p>
+                  <p className="mt-2 text-3xl font-bold text-[#9A6B0E]">{overview.pendingReviewRecords}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                  <p className="text-sm text-slate-300">Bị từ chối</p>
-                  <p className="mt-2 text-3xl font-bold text-rose-200">{overview.rejectedRecords}</p>
+                <div className="rounded-2xl border border-[#F3C2BD] bg-[#FCE8E6] p-4">
+                  <p className="text-sm text-[#B23A30]">Bị từ chối</p>
+                  <p className="mt-2 text-3xl font-bold text-[#B23A30]">{overview.rejectedRecords}</p>
                 </div>
               </div>
             </div>
           </section>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="Tổng bệnh án" value={overview.totalRecords} icon={ClipboardList} tone="bg-indigo-500" />
+            <MetricCard label="Tổng bệnh án" value={overview.totalRecords} icon={ClipboardList} tone="bg-[#2563EB]" />
             <MetricCard label="Bệnh nhân" value={overview.totalPatients} icon={HeartPulse} tone="bg-emerald-500" />
-            <MetricCard label="Tài khoản" value={overview.totalAccounts} icon={Users} tone="bg-slate-800" />
+            <MetricCard label="Tài khoản" value={overview.totalAccounts} icon={Users} tone="bg-[#2563EB]" />
             <MetricCard label="Đang OCR" value={overview.processingRecords} icon={Activity} tone="bg-sky-500" />
             <MetricCard label="OCR xong" value={overview.extractedRecords} icon={BarChart3} tone="bg-blue-500" />
             <MetricCard label="Chờ duyệt" value={overview.pendingReviewRecords} icon={FileClock} tone="bg-amber-500" />
@@ -155,7 +154,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
               <div className="mb-6 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-950">Trạng thái hồ sơ</h2>
@@ -163,10 +162,10 @@ export default function DashboardPage() {
                 </div>
                 <Tag color="blue">records-by-status</Tag>
               </div>
-              <MiniBars items={statusItems} accent="bg-indigo-500" />
+              <MiniBars items={statusItems} accent="bg-[#2563EB]" />
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
               <div className="mb-6 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-950">Khoa phòng nổi bật</h2>
@@ -178,7 +177,7 @@ export default function DashboardPage() {
             </section>
           </div>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
             <div className="mb-5">
               <h2 className="text-lg font-semibold text-slate-950">Hiệu suất người dùng</h2>
               <p className="text-sm text-slate-500">Upload, duyệt và từ chối theo từng tài khoản.</p>

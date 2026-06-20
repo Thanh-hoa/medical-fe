@@ -27,8 +27,8 @@ export default function MedicalRecordApprovalPage() {
         </Button>
       }
     >
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 via-white to-emerald-50 p-5 md:flex-row md:items-center md:justify-between">
+      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
+        <div className="flex flex-col gap-4 border-b border-slate-100 bg-white p-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <div className="grid size-12 place-items-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-200">
               <Clock3 size={22} />
@@ -67,7 +67,7 @@ export default function MedicalRecordApprovalPage() {
                 render: (value: string, record) => (
                   <button
                     type="button"
-                    className="font-semibold text-slate-900 hover:text-indigo-600"
+                    className="font-semibold text-slate-900 hover:text-[#2563EB]"
                     onClick={() => navigate(`/medical-records/${record.id}`)}
                   >
                     {value}

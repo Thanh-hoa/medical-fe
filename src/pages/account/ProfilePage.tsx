@@ -131,9 +131,9 @@ export default function ProfilePage() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* ── Left panel ── */}
         <div className="w-full shrink-0 lg:w-72 xl:w-80">
-          <Card loading={isLoading} className="overflow-hidden rounded-2xl p-0 shadow-sm" styles={{ body: { padding: 0 } }}>
+          <Card loading={isLoading} className="overflow-hidden rounded-2xl p-0 shadow-[0_1px_2px_rgba(15,23,41,0.04)]" styles={{ body: { padding: 0 } }}>
             {/* Gradient banner */}
-            <div className="h-28 bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600" />
+            <div className="h-28 bg-[#EFF6FF]" />
 
             {/* Avatar */}
             <div className="flex flex-col items-center px-6 pb-6">
@@ -210,7 +210,7 @@ export default function ProfilePage() {
 
         {/* ── Right panel ── */}
         <div className="min-w-0 flex-1">
-          <Card loading={isLoading} className="rounded-2xl shadow-sm">
+          <Card loading={isLoading} className="rounded-2xl shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
             <h3 className="mb-1 text-base font-semibold text-slate-900">Chỉnh sửa thông tin</h3>
             <p className="mb-6 text-sm text-slate-500">Cập nhật thông tin cá nhân của bạn bên dưới.</p>
 
@@ -333,13 +333,13 @@ export default function ProfilePage() {
       >
         <div className="overflow-hidden rounded-[28px]">
           <div className="relative bg-slate-950 px-7 py-7 text-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_20%,rgba(45,212,191,0.32),transparent_30%),radial-gradient(circle_at_82%_32%,rgba(129,140,248,0.32),transparent_32%)]" />
+            
             <div className="relative z-10 flex items-start gap-4">
               <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
                 <KeyRound size={26} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">Security vault</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563EB]">Security vault</p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight">Đổi mật khẩu đăng nhập</h2>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
                   Nhập mật khẩu hiện tại trước khi tạo mật khẩu mới. Thay đổi này có hiệu lực ngay cho lần đăng nhập tiếp theo.

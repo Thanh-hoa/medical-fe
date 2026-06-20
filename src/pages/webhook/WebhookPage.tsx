@@ -61,7 +61,7 @@ function WebhookCard({
   const events = parseEventTypes(webhook.eventTypes)
 
   return (
-    <article className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <article className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition-shadow hover:shadow-md">
       {/* status stripe */}
       <div
         className={cn(
@@ -243,7 +243,6 @@ function WebhookFormModal({
         className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!p-0"
       >
         <div className="relative overflow-hidden rounded-t-3xl bg-slate-950 px-7 py-6">
-          <div className="absolute -right-8 -top-8 size-32 rounded-full bg-indigo-500/20 blur-3xl" />
           <div className="relative flex items-center gap-4">
             <div className="grid size-11 place-items-center rounded-2xl bg-white/10">
               <Webhook size={20} className="text-white" />
@@ -390,8 +389,6 @@ export default function WebhookPage() {
 
       {/* stats banner */}
       <div className="relative overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.7)]">
-        <div className="absolute -right-16 -top-16 size-64 rounded-full bg-violet-600/15 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 size-48 rounded-full bg-cyan-500/10 blur-3xl" />
         <div className="relative grid gap-6 sm:grid-cols-3">
           <div className="flex items-center gap-4">
             <div className="grid size-12 place-items-center rounded-2xl bg-white/10">
@@ -412,12 +409,12 @@ export default function WebhookPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="grid size-12 place-items-center rounded-2xl bg-violet-500/20">
-              <ShieldCheck size={22} className="text-violet-300" />
+            <div className="grid size-12 place-items-center rounded-2xl bg-[#EFF6FF]">
+              <ShieldCheck size={22} className="text-[#C9D6F0]" />
             </div>
             <div>
               <p className="text-sm text-slate-400">Event types theo dõi</p>
-              <p className="text-3xl font-bold text-violet-300">{totalEvents}</p>
+              <p className="text-3xl font-bold text-[#C9D6F0]">{totalEvents}</p>
             </div>
           </div>
         </div>

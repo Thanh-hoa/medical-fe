@@ -4,11 +4,14 @@ import { router } from './router'
 
 const theme = {
   token: {
-    colorPrimary: '#6366F1',
-    colorInfo: '#6366F1',
-    borderRadius: 14,
+    colorPrimary: '#2563EB',
+    colorInfo: '#2563EB',
+    borderRadius: 10,
     fontFamily: 'Inter, system-ui, sans-serif',
-    colorBgBase: '#F8FAFC',
+    colorBgBase: '#F7F9FC',
+    colorTextBase: '#0F172A',
+    colorTextSecondary: '#64748B',
+    colorBorder: '#E5EAF1',
   },
 }
 

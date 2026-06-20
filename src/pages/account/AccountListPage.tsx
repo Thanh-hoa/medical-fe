@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { App, Avatar, Button, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Upload } from 'antd'
 import type { UploadFile } from 'antd'
-import { UploadCloud, UserRound } from 'lucide-react'
+import { Search, UploadCloud, UserRound } from 'lucide-react'
 import dayjs from 'dayjs'
 import { accountApi } from '../../api/account.api'
 import { commonApi } from '../../api/common.api'
@@ -35,6 +35,7 @@ export default function AccountListPage() {
   const canEdit = usePermission('accounts:edit')
   const canDelete = usePermission('accounts:delete')
   const [filters, setFilters] = useState({ q: '', page: 1, limit: 10 })
+  const [searchText, setSearchText] = useState('')
   const [open, setOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<AccountInfo | null>(null)
   const [form] = Form.useForm<AccountFormValues>()
@@ -152,13 +153,23 @@ export default function AccountListPage() {
           ) : null
         }
       >
-        <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-          <Space wrap className="mb-5">
-            <Input.Search
+        <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
+          <Space wrap size={10} className="mb-5">
+            <Input
               allowClear
               placeholder="Tìm theo tên hoặc email"
               className="min-w-72"
-              onSearch={(q) => setFilters((prev) => ({ ...prev, q, page: 1 }))}
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              onPressEnter={() => setFilters((prev) => ({ ...prev, q: searchText, page: 1 }))}
+              onClear={() => {
+                setSearchText('')
+                setFilters((prev) => ({ ...prev, q: '', page: 1 }))
+              }}
+            />
+            <Button
+              icon={<Search size={16} />}
+              onClick={() => setFilters((prev) => ({ ...prev, q: searchText, page: 1 }))}
             />
           </Space>
 

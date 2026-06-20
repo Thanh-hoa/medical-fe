@@ -50,10 +50,10 @@ export default function MedicalRecordUploadPage() {
       description="Backend xử lý OCR đồng bộ trong một transaction và trả về hồ sơ ở trạng thái EXTRACTED để nhân viên kiểm tra."
     >
       <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50 via-white to-cyan-50 p-6">
+        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
+          <div className="border-b border-slate-100 bg-white p-6">
             <div className="flex items-center gap-4">
-              <div className="grid size-12 place-items-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
+              <div className="grid size-12 place-items-center rounded-2xl bg-[#2563EB] text-white ">
                 <ScanLine size={22} />
               </div>
               <div>
@@ -69,7 +69,7 @@ export default function MedicalRecordUploadPage() {
               beforeUpload={beforeUpload}
               maxCount={1}
               showUploadList
-              className="!rounded-[24px] !border-2 !border-dashed !border-slate-300 !bg-slate-50 !p-8 transition hover:!border-indigo-400 hover:!bg-indigo-50/60"
+              className="!rounded-[24px] !border-2 !border-dashed !border-slate-300 !bg-slate-50 !p-8 transition hover:!border-[#C9D6F0] hover:!bg-[#F7F9FC]"
             >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined className="!text-5xl !text-slate-400" />
@@ -93,7 +93,7 @@ export default function MedicalRecordUploadPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
           <div className="flex items-center gap-3">
             <FileCheck2 className="text-emerald-500" size={22} />
             <h2 className="text-lg font-semibold text-slate-900">Xem trước</h2>

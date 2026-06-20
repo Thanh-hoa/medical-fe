@@ -53,14 +53,14 @@ const ACTION_META: Record<
   },
   RESUBMIT: {
     icon: RotateCcw,
-    dot: 'bg-violet-400',
-    badge: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
+    dot: 'bg-[#2563EB]',
+    badge: 'bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0]',
     label: 'Resubmit',
   },
   UPDATE: {
     icon: RefreshCw,
-    dot: 'bg-indigo-400',
-    badge: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
+    dot: 'bg-[#2563EB]',
+    badge: 'bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0]',
     label: 'Update',
   },
   DELETE: {
@@ -159,10 +159,9 @@ function DetailModal({ id, onClose }: { id: number; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-950/60" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="relative overflow-hidden bg-slate-950 px-7 py-6">
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-indigo-500/20 blur-3xl" />
           <div className="relative flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="grid size-11 place-items-center rounded-2xl bg-white/10">
@@ -305,11 +304,9 @@ export default function AuditLogPage() {
         </Button>
       }
     >
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
         {/* ── Header panel ── */}
         <div className="relative overflow-hidden bg-slate-950 px-7 py-6">
-          <div className="absolute -right-16 -top-16 size-64 rounded-full bg-indigo-600/15 blur-3xl" />
-          <div className="absolute bottom-0 left-1/2 size-48 rounded-full bg-cyan-500/10 blur-3xl" />
 
           <div className="relative grid gap-6 lg:grid-cols-[auto_1fr]">
             {/* stat block */}

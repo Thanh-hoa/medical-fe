@@ -4,33 +4,33 @@ import { cn } from '../lib/cn'
 const statusConfig: Record<CanonicalRecordStatus, { label: string; dot: string; bg: string; text: string }> = {
   PROCESSING: {
     label: 'Đang xử lý',
-    dot: 'bg-slate-400',
-    bg: 'bg-slate-100',
-    text: 'text-slate-700',
+    dot: 'bg-[#64748B]',
+    bg: 'bg-[#F7F9FC] ring-1 ring-[#E5EAF1]',
+    text: 'text-[#64748B]',
   },
   EXTRACTED: {
     label: 'OCR xong',
-    dot: 'bg-blue-500',
-    bg: 'bg-blue-50',
-    text: 'text-blue-700',
+    dot: 'bg-[#2563EB]',
+    bg: 'bg-[#EFF6FF] ring-1 ring-[#C9D6F0]',
+    text: 'text-[#2563EB]',
   },
   PENDING_DOCTOR_REVIEW: {
     label: 'Chờ bác sĩ duyệt',
-    dot: 'bg-amber-400 animate-pulse',
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
+    dot: 'bg-[#9A6B0E] animate-pulse',
+    bg: 'bg-[#FCF1D9] ring-1 ring-[#F3D99B]',
+    text: 'text-[#9A6B0E]',
   },
   APPROVED: {
     label: 'Đã duyệt',
-    dot: 'bg-emerald-500',
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
+    dot: 'bg-[#1B8050]',
+    bg: 'bg-[#E3F6EB] ring-1 ring-[#BFE8D0]',
+    text: 'text-[#1B8050]',
   },
   REJECTED: {
     label: 'Bị từ chối',
-    dot: 'bg-rose-500',
-    bg: 'bg-rose-50',
-    text: 'text-rose-700',
+    dot: 'bg-[#B23A30]',
+    bg: 'bg-[#FCE8E6] ring-1 ring-[#F3C2BD]',
+    text: 'text-[#B23A30]',
   },
 }
 

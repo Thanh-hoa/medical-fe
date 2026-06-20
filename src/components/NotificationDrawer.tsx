@@ -47,15 +47,15 @@ const TYPE_META: Record<
   },
   RESUBMIT: {
     icon: RotateCcw,
-    accent: 'border-l-violet-400',
-    ring: 'ring-violet-200 bg-violet-50',
-    iconClass: 'text-violet-500',
+    accent: 'border-l-[#2563EB]',
+    ring: 'ring-[#C9D6F0] bg-[#EFF6FF]',
+    iconClass: 'text-[#2563EB]',
   },
   UPDATE: {
     icon: RefreshCw,
-    accent: 'border-l-indigo-400',
-    ring: 'ring-indigo-200 bg-indigo-50',
-    iconClass: 'text-indigo-500',
+    accent: 'border-l-[#2563EB]',
+    ring: 'ring-[#C9D6F0] bg-[#EFF6FF]',
+    iconClass: 'text-[#2563EB]',
   },
   DELETE: {
     icon: Trash2,
@@ -95,7 +95,7 @@ function NotificationItem({
   return (
     <div
       className={cn(
-        'group relative flex gap-3 border-l-[3px] p-4 transition-colors hover:bg-slate-50',
+        'group relative flex gap-3 border-l-[3px] p-4 transition-colors hover:bg-[#F7F9FC]',
         meta.accent,
         !item.isRead && 'bg-slate-50/70',
       )}
@@ -115,7 +115,7 @@ function NotificationItem({
             {item.title}
           </p>
           {!item.isRead && (
-            <span className="mt-1 size-1.5 shrink-0 rounded-full bg-indigo-500" />
+            <span className="mt-1 size-1.5 shrink-0 rounded-full bg-[#2563EB]" />
           )}
         </div>
         <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{item.message}</p>
@@ -222,7 +222,7 @@ export default function NotificationDrawer() {
         onClick={() => {
           setOpen(true)
         }}
-        className="relative grid size-10 place-items-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+        className="relative grid size-10 place-items-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-[#C9D6F0] hover:bg-[#F7F9FC] hover:text-[#2563EB]"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -241,7 +241,6 @@ export default function NotificationDrawer() {
       >
         {/* drawer header */}
         <div className="relative overflow-hidden bg-slate-950 px-6 py-5">
-          <div className="absolute -right-8 -top-8 size-32 rounded-full bg-indigo-500/20 blur-3xl" />
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="grid size-10 place-items-center rounded-2xl bg-white/10">
@@ -287,7 +286,7 @@ export default function NotificationDrawer() {
         <div className="flex-1 overflow-y-auto">
           {/* fetching indicator */}
           {isFetching && status === 'success' && (
-            <div className="flex items-center justify-center gap-2 bg-indigo-50 px-4 py-2 text-xs text-indigo-600">
+            <div className="flex items-center justify-center gap-2 bg-[#EFF6FF] px-4 py-2 text-xs text-[#2563EB]">
               <RefreshCw size={11} className="animate-spin" />
               Đang cập nhật...
             </div>
