@@ -19,4 +19,10 @@ export interface AuditLogFilters {
   resourceType?: string
   actorId?: number
   action?: string
+  period?: AuditLogPeriod
+  date?: string
+  fromDate?: string
+  toDate?: string
 }
+
+export type AuditLogPeriod = 'day' | 'week' | 'month' | 'year'

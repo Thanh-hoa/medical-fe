@@ -4,16 +4,19 @@ import {
   App,
   Alert,
   Button,
+  DatePicker,
   Descriptions,
   Form,
   Input,
   Modal,
   Popconfirm,
   Skeleton,
+  Select,
   Table,
   Tabs,
   Timeline,
 } from 'antd'
+import dayjs, { type Dayjs } from 'dayjs'
 import { CheckCircle2, ClipboardCheck, PencilLine, Pill, RotateCcw, Send, Trash2, XCircle } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import PageShell from '../../components/PageShell'
@@ -22,6 +25,7 @@ import { APP_BASE_URL } from '../../config/env'
 import { usePermission } from '../../hooks/usePermission'
 import { medicalRecordApi } from '../../api/medicalRecord.api'
 import { prescriptionApi } from '../../api/prescription.api'
+import type { AuditLogFilters, AuditLogPeriod } from '../../types/auditLog.types'
 import {
   normalizeRecordStatus,
   type ExtractedData,
@@ -54,6 +58,38 @@ const ocrLabels: Record<string, string> = {
   department: 'Khoa/Phòng',
   signerName: 'Người ký',
   diagnosis: 'Chẩn đoán',
+}
+
+const { RangePicker } = DatePicker
+const API_DATE_FORMAT = 'YYYY-MM-DD'
+
+type AuditTimeFilterMode = 'all' | 'today' | AuditLogPeriod | 'range'
+
+const auditTimeFilterOptions: { value: AuditTimeFilterMode; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'day', label: 'Theo ngày' },
+  { value: 'week', label: 'Theo tuần' },
+  { value: 'month', label: 'Theo tháng' },
+  { value: 'year', label: 'Theo năm' },
+  { value: 'range', label: 'Khoảng ngày' },
+]
+
+function buildAuditTimeFilters(
+  mode: AuditTimeFilterMode,
+  anchorDate: Dayjs,
+  range: [Dayjs | null, Dayjs | null] | null,
+): AuditLogFilters {
+  if (mode === 'all') return {}
+  if (mode === 'today') return { period: 'day', date: dayjs().format(API_DATE_FORMAT) }
+  if (mode === 'range') {
+    return {
+      fromDate: range?.[0]?.format(API_DATE_FORMAT),
+      toDate: range?.[1]?.format(API_DATE_FORMAT),
+    }
+  }
+
+  return { period: mode, date: anchorDate.format(API_DATE_FORMAT) }
 }
 
 function normalizeExtractedData(data: ExtractedData | null) {
@@ -139,6 +175,18 @@ export default function MedicalRecordDetailPage() {
   const [editForm] = Form.useForm<EditFormValues>()
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectForm] = Form.useForm<{ rejectionReason: string }>()
+  const [auditTimeMode, setAuditTimeMode] = useState<AuditTimeFilterMode>('all')
+  const [auditAnchorDate, setAuditAnchorDate] = useState<Dayjs>(dayjs())
+  const [auditRangeDates, setAuditRangeDates] = useState<[Dayjs | null, Dayjs | null] | null>(null)
+
+  const auditLogFilters = useMemo<AuditLogFilters>(
+    () => ({
+      page: 1,
+      limit: 20,
+      ...buildAuditTimeFilters(auditTimeMode, auditAnchorDate, auditRangeDates),
+    }),
+    [auditAnchorDate, auditRangeDates, auditTimeMode],
+  )
 
   const recordQuery = useQuery({
     enabled: Boolean(id),
@@ -152,8 +200,8 @@ export default function MedicalRecordDetailPage() {
 
   const auditLogsQuery = useQuery({
     enabled: Boolean(id),
-    queryKey: ['record', id, 'audit-logs'],
-    queryFn: () => medicalRecordApi.auditLogs(Number(id), { page: 1, limit: 20 }).then((response) => response.data.data),
+    queryKey: ['record', id, 'audit-logs', auditLogFilters],
+    queryFn: () => medicalRecordApi.auditLogs(Number(id), auditLogFilters).then((response) => response.data.data),
   })
 
   const record = recordQuery.data
@@ -602,7 +650,33 @@ export default function MedicalRecordDetailPage() {
                     key: 'audit',
                     label: 'Nhật ký thao tác',
                     children: (
-                      <Timeline
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Select<AuditTimeFilterMode>
+                            className="min-w-36"
+                            options={auditTimeFilterOptions}
+                            value={auditTimeMode}
+                            onChange={(mode) => setAuditTimeMode(mode)}
+                          />
+                          {auditTimeMode !== 'all' && auditTimeMode !== 'today' && auditTimeMode !== 'range' ? (
+                            <DatePicker
+                              className="w-40"
+                              picker={auditTimeMode === 'month' || auditTimeMode === 'year' ? auditTimeMode : 'date'}
+                              value={auditAnchorDate}
+                              format={auditTimeMode === 'year' ? 'YYYY' : auditTimeMode === 'month' ? 'MM/YYYY' : 'DD/MM/YYYY'}
+                              onChange={(value) => setAuditAnchorDate(value ?? dayjs())}
+                            />
+                          ) : null}
+                          {auditTimeMode === 'range' ? (
+                            <RangePicker
+                              className="w-72"
+                              value={auditRangeDates}
+                              format="DD/MM/YYYY"
+                              onChange={(values) => setAuditRangeDates(values ? [values[0], values[1]] as [Dayjs | null, Dayjs | null] : null)}
+                            />
+                          ) : null}
+                        </div>
+                        <Timeline
                         pending={auditLogsQuery.isLoading ? 'Đang tải lịch sử...' : false}
                         items={(auditLogsQuery.data?.items ?? []).map((log) => ({
                           color: log.action === 'REJECT' ? 'red' : log.action === 'APPROVE' ? 'green' : 'blue',
@@ -625,7 +699,8 @@ export default function MedicalRecordDetailPage() {
                             </div>
                           ),
                         }))}
-                      />
+                        />
+                      </div>
                     ),
                   },
                 ]}

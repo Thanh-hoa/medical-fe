@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Descriptions, Input, Select, Skeleton, Spin, Table, Tooltip } from 'antd'
+import { Button, DatePicker, Descriptions, Input, Select, Skeleton, Spin, Table, Tooltip } from 'antd'
+import dayjs, { type Dayjs } from 'dayjs'
 import {
   ArrowRight,
   CheckCircle2,
@@ -11,14 +12,13 @@ import {
   RefreshCw,
   RotateCcw,
   Send,
-  Shield,
   Trash2,
   UserRound,
   XCircle,
 } from 'lucide-react'
 import PageShell from '../../components/PageShell'
 import { auditLogApi } from '../../api/auditLog.api'
-import type { AuditLog, AuditLogFilters } from '../../types/auditLog.types'
+import type { AuditLog, AuditLogFilters, AuditLogPeriod } from '../../types/auditLog.types'
 import { cn } from '../../lib/cn'
 
 type ActionKey = 'UPLOAD' | 'SUBMIT' | 'APPROVE' | 'REJECT' | 'RESUBMIT' | 'UPDATE' | 'DELETE'
@@ -256,6 +256,39 @@ const actionOptions = [
   { value: 'DELETE', label: 'DELETE' },
 ]
 
+const { RangePicker } = DatePicker
+const API_DATE_FORMAT = 'YYYY-MM-DD'
+
+type TimeFilterMode = 'all' | 'today' | AuditLogPeriod | 'range'
+
+const timeFilterOptions: { value: TimeFilterMode; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'day', label: 'Theo ngày' },
+  { value: 'week', label: 'Theo tuần' },
+  { value: 'month', label: 'Theo tháng' },
+  { value: 'year', label: 'Theo năm' },
+  { value: 'range', label: 'Khoảng ngày' },
+]
+
+function clearTimeFilters(filters: AuditLogFilters): AuditLogFilters {
+  const { period: _period, date: _date, fromDate: _fromDate, toDate: _toDate, ...rest } = filters
+  return rest
+}
+
+function buildTimeFilters(mode: TimeFilterMode, anchorDate: Dayjs, range: [Dayjs | null, Dayjs | null] | null) {
+  if (mode === 'all') return {}
+  if (mode === 'today') return { period: 'day' as const, date: dayjs().format(API_DATE_FORMAT) }
+  if (mode === 'range') {
+    return {
+      fromDate: range?.[0]?.format(API_DATE_FORMAT),
+      toDate: range?.[1]?.format(API_DATE_FORMAT),
+    }
+  }
+
+  return { period: mode, date: anchorDate.format(API_DATE_FORMAT) }
+}
+
 function TimelineBar() {
   const entries = Object.values(ACTION_META)
 
@@ -275,6 +308,9 @@ export default function AuditLogPage() {
   const [filters, setFilters] = useState<AuditLogFilters>({ page: 1, limit: 10 })
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [actorIdDraft, setActorIdDraft] = useState('')
+  const [timeMode, setTimeMode] = useState<TimeFilterMode>('all')
+  const [anchorDate, setAnchorDate] = useState<Dayjs>(dayjs())
+  const [rangeDates, setRangeDates] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -285,10 +321,25 @@ export default function AuditLogPage() {
   const resetMutation = useMutation({
     mutationFn: async () => {
       setActorIdDraft('')
+      setTimeMode('all')
+      setAnchorDate(dayjs())
+      setRangeDates(null)
       setFilters({ page: 1, limit: 10 })
       await queryClient.invalidateQueries({ queryKey: ['audit-logs'] })
     },
   })
+
+  const applyTimeFilter = (
+    mode: TimeFilterMode,
+    nextAnchorDate = anchorDate,
+    nextRangeDates = rangeDates,
+  ) => {
+    setFilters((prev) => ({
+      ...clearTimeFilters(prev),
+      ...buildTimeFilters(mode, nextAnchorDate, nextRangeDates),
+      page: 1,
+    }))
+  }
 
   return (
     <PageShell
@@ -326,9 +377,43 @@ export default function AuditLogPage() {
             </div>
 
             {/* filter controls */}
-            <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:ml-auto lg:max-w-[620px]">
+              <Select<TimeFilterMode>
+                className="w-full"
+                options={timeFilterOptions}
+                value={timeMode}
+                onChange={(mode) => {
+                  setTimeMode(mode)
+                  applyTimeFilter(mode)
+                }}
+              />
+              {timeMode !== 'all' && timeMode !== 'today' && timeMode !== 'range' ? (
+                <DatePicker
+                  className="w-full"
+                  picker={timeMode === 'month' || timeMode === 'year' ? timeMode : 'date'}
+                  value={anchorDate}
+                  format={timeMode === 'year' ? 'YYYY' : timeMode === 'month' ? 'MM/YYYY' : 'DD/MM/YYYY'}
+                  onChange={(value) => {
+                    const nextDate = value ?? dayjs()
+                    setAnchorDate(nextDate)
+                    applyTimeFilter(timeMode, nextDate)
+                  }}
+                />
+              ) : null}
+              {timeMode === 'range' ? (
+                <RangePicker
+                  className="w-full sm:col-span-2"
+                  value={rangeDates}
+                  format="DD/MM/YYYY"
+                  onChange={(values) => {
+                    const nextRange = values ? [values[0], values[1]] as [Dayjs | null, Dayjs | null] : null
+                    setRangeDates(nextRange)
+                    applyTimeFilter('range', anchorDate, nextRange)
+                  }}
+                />
+              ) : null}
               <Select
-                className="min-w-44"
+                className="w-full"
                 options={actionOptions}
                 value={filters.action ?? ''}
                 onChange={(action) =>
@@ -336,16 +421,7 @@ export default function AuditLogPage() {
                 }
               />
               <Input
-                className="w-52"
-                placeholder="Loại tài nguyên"
-                prefix={<Shield size={13} className="text-slate-400" />}
-                value={filters.resourceType ?? ''}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, resourceType: e.target.value || undefined, page: 1 }))
-                }
-              />
-              <Input
-                className="w-40"
+                className="w-full"
                 placeholder="ID người thao tác"
                 prefix={<UserRound size={13} className="text-slate-400" />}
                 value={actorIdDraft}
