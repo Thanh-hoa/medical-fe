@@ -57,19 +57,19 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#020617,#0f172a_48%,#111827)] px-4 py-10 text-white">
+    <main className="min-h-screen bg-[#F7F9FC] px-4 py-10 text-[#0F172A]">
       <section className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-5xl items-center justify-center">
-        <div className="w-full overflow-hidden rounded-[34px] border border-white/10 bg-white/[0.06] shadow-[0_40px_120px_-55px_rgba(15,23,42,1)] backdrop-blur-2xl">
+        <div className="w-full overflow-hidden rounded-xl border border-[#E5EAF1] bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
           <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative p-8 sm:p-10">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(45,212,191,0.28),transparent_30%),radial-gradient(circle_at_80%_75%,rgba(129,140,248,0.28),transparent_30%)]" />
+              
               <div className="relative z-10 flex h-full min-h-[360px] flex-col justify-between">
-                <Link to="/login" className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-300 hover:text-white">
+                <Link to="/login" className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-300 hover:text-[#0F172A]">
                   <ArrowLeft size={16} />
                   Đăng nhập
                 </Link>
                 <div>
-                  <div className="grid size-16 place-items-center rounded-3xl bg-cyan-400 text-slate-950 shadow-[0_22px_55px_-22px_rgba(34,211,238,0.9)]">
+                  <div className="grid size-16 place-items-center rounded-3xl bg-[#EFF6FF] text-[#2563EB] shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
                     <LockKeyhole size={30} />
                   </div>
                   <h1 className="mt-8 max-w-sm text-5xl font-semibold leading-tight tracking-tight">
@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="bg-white p-6 text-slate-950 sm:p-10">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-600">Reset password</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#2563EB]">Reset password</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight">Đặt lại mật khẩu</h2>
 
               {!token ? (

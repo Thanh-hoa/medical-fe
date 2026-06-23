@@ -44,10 +44,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_32%),linear-gradient(180deg,_#f8fafc,_#eef2ff_45%,_#f8fafc)] lg:grid-cols-[1.1fr_0.9fr]">
+    <main className="grid min-h-screen bg-[#F7F9FC] lg:grid-cols-[1.1fr_0.9fr]">
       <section className="hidden border-r border-white/60 px-10 py-12 lg:flex lg:flex-col lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-500">Medical Frontend Plan</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563EB]">Medical Frontend Plan</p>
           <h1 className="mt-5 max-w-xl text-5xl font-semibold leading-tight tracking-tight text-slate-950">
             MED-OCR vận hành quy trình bệnh án số từ tải lên đến phê duyệt.
           </h1>
@@ -58,9 +58,9 @@ export default function LoginPage() {
 
         <div className="grid gap-4">
           {features.map(({ icon: Icon, title, text }) => (
-            <article key={title} className="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-[0_18px_60px_-32px_rgba(15,23,42,0.35)] backdrop-blur">
+            <article key={title} className="rounded-xl border border-[#E5EAF1] bg-white p-5 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
               <div className="flex items-start gap-4">
-                <div className="grid size-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <div className="grid size-12 place-items-center rounded-2xl bg-[#EFF6FF] text-[#2563EB]">
                   <Icon size={20} />
                 </div>
                 <div>
@@ -74,9 +74,9 @@ export default function LoginPage() {
       </section>
 
       <section className="flex items-center justify-center px-4 py-12 md:px-8">
-        <div className="w-full max-w-md rounded-[32px] border border-white/70 bg-white/85 p-8 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-xl">
+        <div className="w-full max-w-md rounded-xl border border-[#E5EAF1] bg-white p-8 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
           <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-500">Đăng nhập</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#2563EB]">Đăng nhập</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">Truy cập hệ thống MED-OCR</h2>
             <p className="mt-3 text-sm leading-6 text-slate-500">
               Dùng tài khoản backend hiện tại để đăng nhập, lấy hồ sơ cá nhân và menu phân quyền.
@@ -105,11 +105,11 @@ export default function LoginPage() {
             </Button>
           </Form>
 
-          <Link to="/forgot-password" className="mt-4 block text-center text-sm font-semibold text-slate-500 hover:text-indigo-600">
+          <Link to="/forgot-password" className="mt-4 block text-center text-sm font-semibold text-slate-500 hover:text-[#2563EB]">
             Quên mật khẩu?
           </Link>
 
-          <Link to="/register" className="mt-5 block text-center text-sm font-medium text-indigo-600">
+          <Link to="/register" className="mt-5 block text-center text-sm font-medium text-[#2563EB]">
             Tạo tài khoản mới
           </Link>
         </div>

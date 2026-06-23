@@ -19,11 +19,11 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-[#E5EAF1] bg-white/95">
       <div className="flex h-18 items-center justify-between px-5 md:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">MED-OCR</p>
-          <p className="mt-1 text-sm text-slate-500">Hệ thống xử lý bệnh án và OCR nội bộ</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563EB]">MED-OCR</p>
+          <p className="mt-1 text-sm font-medium text-[#0F172A]">Hệ thống xử lý bệnh án và OCR nội bộ</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ export default function Header() {
           >
             <button
               type="button"
-              className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-indigo-200 hover:bg-slate-50"
+              className="flex items-center gap-3 rounded-xl border border-[#E5EAF1] bg-[#F7F9FC] px-3 py-2 text-left transition hover:border-[#C9D6F0] hover:bg-[#EFF6FF]"
             >
               <Avatar src={user?.photoUrl} icon={<UserRound size={16} />} />
               <div className="hidden sm:block">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Descriptions, Input, Select, Skeleton, Spin, Table, Tooltip } from 'antd'
+import { Button, DatePicker, Descriptions, Input, Select, Skeleton, Spin, Table, Tooltip } from 'antd'
+import dayjs, { type Dayjs } from 'dayjs'
 import {
   ArrowRight,
   CheckCircle2,
@@ -11,14 +12,13 @@ import {
   RefreshCw,
   RotateCcw,
   Send,
-  Shield,
   Trash2,
   UserRound,
   XCircle,
 } from 'lucide-react'
 import PageShell from '../../components/PageShell'
 import { auditLogApi } from '../../api/auditLog.api'
-import type { AuditLog, AuditLogFilters } from '../../types/auditLog.types'
+import type { AuditLog, AuditLogFilters, AuditLogPeriod } from '../../types/auditLog.types'
 import { cn } from '../../lib/cn'
 
 type ActionKey = 'UPLOAD' | 'SUBMIT' | 'APPROVE' | 'REJECT' | 'RESUBMIT' | 'UPDATE' | 'DELETE'
@@ -53,14 +53,14 @@ const ACTION_META: Record<
   },
   RESUBMIT: {
     icon: RotateCcw,
-    dot: 'bg-violet-400',
-    badge: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
+    dot: 'bg-[#2563EB]',
+    badge: 'bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0]',
     label: 'Resubmit',
   },
   UPDATE: {
     icon: RefreshCw,
-    dot: 'bg-indigo-400',
-    badge: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
+    dot: 'bg-[#2563EB]',
+    badge: 'bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0]',
     label: 'Update',
   },
   DELETE: {
@@ -159,10 +159,9 @@ function DetailModal({ id, onClose }: { id: number; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-950/60" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="relative overflow-hidden bg-slate-950 px-7 py-6">
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-indigo-500/20 blur-3xl" />
           <div className="relative flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="grid size-11 place-items-center rounded-2xl bg-white/10">
@@ -257,6 +256,39 @@ const actionOptions = [
   { value: 'DELETE', label: 'DELETE' },
 ]
 
+const { RangePicker } = DatePicker
+const API_DATE_FORMAT = 'YYYY-MM-DD'
+
+type TimeFilterMode = 'all' | 'today' | AuditLogPeriod | 'range'
+
+const timeFilterOptions: { value: TimeFilterMode; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'day', label: 'Theo ngày' },
+  { value: 'week', label: 'Theo tuần' },
+  { value: 'month', label: 'Theo tháng' },
+  { value: 'year', label: 'Theo năm' },
+  { value: 'range', label: 'Khoảng ngày' },
+]
+
+function clearTimeFilters(filters: AuditLogFilters): AuditLogFilters {
+  const { period: _period, date: _date, fromDate: _fromDate, toDate: _toDate, ...rest } = filters
+  return rest
+}
+
+function buildTimeFilters(mode: TimeFilterMode, anchorDate: Dayjs, range: [Dayjs | null, Dayjs | null] | null) {
+  if (mode === 'all') return {}
+  if (mode === 'today') return { period: 'day' as const, date: dayjs().format(API_DATE_FORMAT) }
+  if (mode === 'range') {
+    return {
+      fromDate: range?.[0]?.format(API_DATE_FORMAT),
+      toDate: range?.[1]?.format(API_DATE_FORMAT),
+    }
+  }
+
+  return { period: mode, date: anchorDate.format(API_DATE_FORMAT) }
+}
+
 function TimelineBar() {
   const entries = Object.values(ACTION_META)
 
@@ -276,6 +308,9 @@ export default function AuditLogPage() {
   const [filters, setFilters] = useState<AuditLogFilters>({ page: 1, limit: 10 })
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [actorIdDraft, setActorIdDraft] = useState('')
+  const [timeMode, setTimeMode] = useState<TimeFilterMode>('all')
+  const [anchorDate, setAnchorDate] = useState<Dayjs>(dayjs())
+  const [rangeDates, setRangeDates] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -286,10 +321,25 @@ export default function AuditLogPage() {
   const resetMutation = useMutation({
     mutationFn: async () => {
       setActorIdDraft('')
+      setTimeMode('all')
+      setAnchorDate(dayjs())
+      setRangeDates(null)
       setFilters({ page: 1, limit: 10 })
       await queryClient.invalidateQueries({ queryKey: ['audit-logs'] })
     },
   })
+
+  const applyTimeFilter = (
+    mode: TimeFilterMode,
+    nextAnchorDate = anchorDate,
+    nextRangeDates = rangeDates,
+  ) => {
+    setFilters((prev) => ({
+      ...clearTimeFilters(prev),
+      ...buildTimeFilters(mode, nextAnchorDate, nextRangeDates),
+      page: 1,
+    }))
+  }
 
   return (
     <PageShell
@@ -305,11 +355,9 @@ export default function AuditLogPage() {
         </Button>
       }
     >
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
         {/* ── Header panel ── */}
         <div className="relative overflow-hidden bg-slate-950 px-7 py-6">
-          <div className="absolute -right-16 -top-16 size-64 rounded-full bg-indigo-600/15 blur-3xl" />
-          <div className="absolute bottom-0 left-1/2 size-48 rounded-full bg-cyan-500/10 blur-3xl" />
 
           <div className="relative grid gap-6 lg:grid-cols-[auto_1fr]">
             {/* stat block */}
@@ -329,9 +377,43 @@ export default function AuditLogPage() {
             </div>
 
             {/* filter controls */}
-            <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:ml-auto lg:max-w-[620px]">
+              <Select<TimeFilterMode>
+                className="w-full"
+                options={timeFilterOptions}
+                value={timeMode}
+                onChange={(mode) => {
+                  setTimeMode(mode)
+                  applyTimeFilter(mode)
+                }}
+              />
+              {timeMode !== 'all' && timeMode !== 'today' && timeMode !== 'range' ? (
+                <DatePicker
+                  className="w-full"
+                  picker={timeMode === 'month' || timeMode === 'year' ? timeMode : 'date'}
+                  value={anchorDate}
+                  format={timeMode === 'year' ? 'YYYY' : timeMode === 'month' ? 'MM/YYYY' : 'DD/MM/YYYY'}
+                  onChange={(value) => {
+                    const nextDate = value ?? dayjs()
+                    setAnchorDate(nextDate)
+                    applyTimeFilter(timeMode, nextDate)
+                  }}
+                />
+              ) : null}
+              {timeMode === 'range' ? (
+                <RangePicker
+                  className="w-full sm:col-span-2"
+                  value={rangeDates}
+                  format="DD/MM/YYYY"
+                  onChange={(values) => {
+                    const nextRange = values ? [values[0], values[1]] as [Dayjs | null, Dayjs | null] : null
+                    setRangeDates(nextRange)
+                    applyTimeFilter('range', anchorDate, nextRange)
+                  }}
+                />
+              ) : null}
               <Select
-                className="min-w-44"
+                className="w-full"
                 options={actionOptions}
                 value={filters.action ?? ''}
                 onChange={(action) =>
@@ -339,16 +421,7 @@ export default function AuditLogPage() {
                 }
               />
               <Input
-                className="w-52"
-                placeholder="Loại tài nguyên"
-                prefix={<Shield size={13} className="text-slate-400" />}
-                value={filters.resourceType ?? ''}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, resourceType: e.target.value || undefined, page: 1 }))
-                }
-              />
-              <Input
-                className="w-40"
+                className="w-full"
                 placeholder="ID người thao tác"
                 prefix={<UserRound size={13} className="text-slate-400" />}
                 value={actorIdDraft}

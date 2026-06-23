@@ -19,8 +19,8 @@ export default function RegisterPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
-      <section className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-500">Đăng ký</p>
+      <section className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
+        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#2563EB]">Đăng ký</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">Tạo tài khoản</h1>
         <Form className="mt-8" layout="vertical" size="large" requiredMark={false} onFinish={onFinish}>
           <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email', message: 'Nhập email hợp lệ' }]}>
@@ -49,7 +49,7 @@ export default function RegisterPage() {
             Đăng ký
           </Button>
         </Form>
-        <Link to="/login" className="mt-5 block text-center text-sm text-indigo-600">
+        <Link to="/login" className="mt-5 block text-center text-sm text-[#2563EB]">
           Đã có tài khoản? Đăng nhập
         </Link>
       </section>

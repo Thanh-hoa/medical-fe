@@ -70,7 +70,7 @@ export default function MedicalRecordListPage() {
         </>
       }
     >
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
         <div className="grid gap-0 border-b border-slate-100 md:grid-cols-4">
           <div className="border-b border-slate-100 p-5 md:border-r md:border-b-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cần kiểm tra</p>
@@ -135,7 +135,7 @@ export default function MedicalRecordListPage() {
                 render: (value: string, record) => (
                   <button
                     type="button"
-                    className="font-semibold text-slate-900 hover:text-indigo-600"
+                    className="font-semibold text-slate-900 hover:text-[#2563EB]"
                     onClick={() => navigate(`/medical-records/${record.id}`)}
                   >
                     {value}

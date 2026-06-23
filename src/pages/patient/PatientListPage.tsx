@@ -91,11 +91,11 @@ export default function PatientListPage() {
         ) : null
       }
     >
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50 via-white to-emerald-50 p-6">
+      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
+        <div className="border-b border-slate-100 bg-white p-6">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex items-center gap-4 rounded-3xl border border-white bg-white/80 p-4 shadow-sm">
-              <div className="grid size-12 place-items-center rounded-2xl bg-indigo-600 text-white">
+            <div className="flex items-center gap-4 rounded-3xl border border-[#E5EAF1] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
+              <div className="grid size-12 place-items-center rounded-2xl bg-[#2563EB] text-white">
                 <UsersRound size={22} />
               </div>
               <div>
@@ -103,7 +103,7 @@ export default function PatientListPage() {
                 <p className="mt-1 text-2xl font-semibold text-slate-950">{visibleStats.total}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 rounded-3xl border border-white bg-white/80 p-4 shadow-sm">
+            <div className="flex items-center gap-4 rounded-3xl border border-[#E5EAF1] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
               <div className="grid size-12 place-items-center rounded-2xl bg-emerald-500 text-white">
                 <ShieldPlus size={22} />
               </div>
@@ -112,7 +112,7 @@ export default function PatientListPage() {
                 <p className="mt-1 text-2xl font-semibold text-slate-950">{visibleStats.pageCount}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 rounded-3xl border border-white bg-white/80 p-4 shadow-sm">
+            <div className="flex items-center gap-4 rounded-3xl border border-[#E5EAF1] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
               <div className="grid size-12 place-items-center rounded-2xl bg-sky-500 text-white">
                 <CalendarDays size={22} />
               </div>
@@ -173,12 +173,13 @@ export default function PatientListPage() {
               {
                 title: 'Bệnh nhân',
                 dataIndex: 'name',
+                width: 210,
                 render: (value: string, item) => (
-                  <div>
+                  <div className="min-w-[170px] text-left">
                     <button
                       type="button"
-                      className="font-semibold text-slate-950 transition hover:text-indigo-600"
-                      onClick={() => navigate(`/patient-search?bhyt=${encodeURIComponent(item.bhyt)}`)}
+                      className="block max-w-[180px] whitespace-normal break-words text-left font-semibold leading-6 text-slate-950 transition hover:text-[#2563EB]"
+                      onClick={() => navigate(`/patients/detail?bhyt=${encodeURIComponent(item.bhyt)}`)}
                     >
                       {value}
                     </button>
@@ -202,17 +203,18 @@ export default function PatientListPage() {
               },
               {
                 title: 'Thao tác',
-                width: 220,
+                width: 160,
                 render: (_, item) => (
-                  <Space wrap>
+                  <Space direction="vertical" size={8}>
                     <Button
+                      className="w-32 justify-center"
                       icon={<FileSearch size={15} />}
-                      onClick={() => navigate(`/patient-search?bhyt=${encodeURIComponent(item.bhyt)}`)}
+                      onClick={() => navigate(`/patients/detail?bhyt=${encodeURIComponent(item.bhyt)}`)}
                     >
                       Chi tiết
                     </Button>
                     {canEdit ? (
-                      <Button icon={<Edit3 size={15} />} onClick={() => setModalState({ mode: 'edit', patient: item })}>
+                      <Button className="w-32 justify-center" icon={<Edit3 size={15} />} onClick={() => setModalState({ mode: 'edit', patient: item })}>
                         Sửa
                       </Button>
                     ) : null}

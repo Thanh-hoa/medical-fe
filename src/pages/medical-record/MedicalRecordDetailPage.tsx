@@ -4,23 +4,28 @@ import {
   App,
   Alert,
   Button,
+  DatePicker,
   Descriptions,
   Form,
   Input,
   Modal,
   Popconfirm,
   Skeleton,
+  Select,
   Table,
   Tabs,
   Timeline,
 } from 'antd'
-import { CheckCircle2, ClipboardCheck, PencilLine, RotateCcw, Send, Trash2, XCircle } from 'lucide-react'
+import dayjs, { type Dayjs } from 'dayjs'
+import { CheckCircle2, ClipboardCheck, PencilLine, Pill, RotateCcw, Send, Trash2, XCircle } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import PageShell from '../../components/PageShell'
 import StatusBadge from '../../components/StatusBadge'
 import { APP_BASE_URL } from '../../config/env'
 import { usePermission } from '../../hooks/usePermission'
 import { medicalRecordApi } from '../../api/medicalRecord.api'
+import { prescriptionApi } from '../../api/prescription.api'
+import type { AuditLogFilters, AuditLogPeriod } from '../../types/auditLog.types'
 import {
   normalizeRecordStatus,
   type ExtractedData,
@@ -53,6 +58,38 @@ const ocrLabels: Record<string, string> = {
   department: 'Khoa/Phòng',
   signerName: 'Người ký',
   diagnosis: 'Chẩn đoán',
+}
+
+const { RangePicker } = DatePicker
+const API_DATE_FORMAT = 'YYYY-MM-DD'
+
+type AuditTimeFilterMode = 'all' | 'today' | AuditLogPeriod | 'range'
+
+const auditTimeFilterOptions: { value: AuditTimeFilterMode; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'day', label: 'Theo ngày' },
+  { value: 'week', label: 'Theo tuần' },
+  { value: 'month', label: 'Theo tháng' },
+  { value: 'year', label: 'Theo năm' },
+  { value: 'range', label: 'Khoảng ngày' },
+]
+
+function buildAuditTimeFilters(
+  mode: AuditTimeFilterMode,
+  anchorDate: Dayjs,
+  range: [Dayjs | null, Dayjs | null] | null,
+): AuditLogFilters {
+  if (mode === 'all') return {}
+  if (mode === 'today') return { period: 'day', date: dayjs().format(API_DATE_FORMAT) }
+  if (mode === 'range') {
+    return {
+      fromDate: range?.[0]?.format(API_DATE_FORMAT),
+      toDate: range?.[1]?.format(API_DATE_FORMAT),
+    }
+  }
+
+  return { period: mode, date: anchorDate.format(API_DATE_FORMAT) }
 }
 
 function normalizeExtractedData(data: ExtractedData | null) {
@@ -138,6 +175,18 @@ export default function MedicalRecordDetailPage() {
   const [editForm] = Form.useForm<EditFormValues>()
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectForm] = Form.useForm<{ rejectionReason: string }>()
+  const [auditTimeMode, setAuditTimeMode] = useState<AuditTimeFilterMode>('all')
+  const [auditAnchorDate, setAuditAnchorDate] = useState<Dayjs>(dayjs())
+  const [auditRangeDates, setAuditRangeDates] = useState<[Dayjs | null, Dayjs | null] | null>(null)
+
+  const auditLogFilters = useMemo<AuditLogFilters>(
+    () => ({
+      page: 1,
+      limit: 20,
+      ...buildAuditTimeFilters(auditTimeMode, auditAnchorDate, auditRangeDates),
+    }),
+    [auditAnchorDate, auditRangeDates, auditTimeMode],
+  )
 
   const recordQuery = useQuery({
     enabled: Boolean(id),
@@ -151,8 +200,8 @@ export default function MedicalRecordDetailPage() {
 
   const auditLogsQuery = useQuery({
     enabled: Boolean(id),
-    queryKey: ['record', id, 'audit-logs'],
-    queryFn: () => medicalRecordApi.auditLogs(Number(id), { page: 1, limit: 20 }).then((response) => response.data.data),
+    queryKey: ['record', id, 'audit-logs', auditLogFilters],
+    queryFn: () => medicalRecordApi.auditLogs(Number(id), auditLogFilters).then((response) => response.data.data),
   })
 
   const record = recordQuery.data
@@ -270,6 +319,19 @@ export default function MedicalRecordDetailPage() {
   const canResubmit = recordStatus === 'REJECTED' && canEdit
   const canOpenEdit = Boolean(record && canEdit && recordStatus !== 'APPROVED')
   const canEditDiagnosisForApproval = Boolean(canApprove)
+  const canOpenPrescription = Boolean(record && recordStatus === 'APPROVED')
+
+  const prescriptionQuery = useQuery({
+    enabled: Boolean(id && canOpenPrescription),
+    queryKey: ['prescription', 'medical-record', id],
+    queryFn: () => prescriptionApi.getByMedicalRecord(Number(id)).then((response) => response.data.data),
+  })
+
+  const prescriptionActionLabel = (() => {
+    if (prescriptionQuery.isLoading) return 'Đang tải toa'
+    if (!prescriptionQuery.data) return 'Tạo toa thuốc'
+    return prescriptionQuery.data.status === 'ISSUED' ? 'Xem/In toa' : 'Tiếp tục kê toa'
+  })()
 
   const imageUrl = useMemo(() => {
     if (!record?.originalImagePath) return null
@@ -299,10 +361,11 @@ export default function MedicalRecordDetailPage() {
         title={record.recordNumber}
         description="Đối chiếu file gốc với dữ liệu OCR, cập nhật thông tin sai lệch, gửi bác sĩ duyệt và khóa hồ sơ ở trạng thái đã duyệt."
         actions={
-          <>
+          <div className="flex max-w-full items-center gap-3 overflow-x-auto whitespace-nowrap pb-1">
             <StatusBadge status={record.status} />
             {canOpenEdit ? (
               <Button
+                className="shrink-0"
                 icon={<PencilLine size={17} />}
                 onClick={() => {
                   editForm.setFieldsValue(buildInitialValues(record))
@@ -312,8 +375,20 @@ export default function MedicalRecordDetailPage() {
                 Sửa chi tiết
               </Button>
             ) : null}
+            {canOpenPrescription ? (
+              <Button
+                className="shrink-0"
+                type={prescriptionQuery.data ? 'default' : 'primary'}
+                icon={<Pill size={17} />}
+                loading={prescriptionQuery.isLoading}
+                onClick={() => navigate(`/medical-records/${id}/prescription`)}
+              >
+                {prescriptionActionLabel}
+              </Button>
+            ) : null}
             {canSubmit ? (
               <Button
+                className="shrink-0"
                 type="primary"
                 icon={<Send size={17} />}
                 loading={submitMutation.isPending}
@@ -328,7 +403,7 @@ export default function MedicalRecordDetailPage() {
                 description="Hồ sơ sẽ quay lại trạng thái chờ bác sĩ duyệt."
                 onConfirm={() => resubmitMutation.mutate()}
               >
-                <Button type="primary" icon={<RotateCcw size={17} />} loading={resubmitMutation.isPending}>
+                <Button className="shrink-0" type="primary" icon={<RotateCcw size={17} />} loading={resubmitMutation.isPending}>
                   Nộp lại
                 </Button>
               </Popconfirm>
@@ -340,6 +415,7 @@ export default function MedicalRecordDetailPage() {
                 onConfirm={() => approveWithDiagnosisMutation.mutate()}
               >
                 <Button
+                  className="shrink-0"
                   type="primary"
                   icon={<CheckCircle2 size={17} />}
                   loading={approveMutation.isPending || approveWithDiagnosisMutation.isPending}
@@ -349,21 +425,21 @@ export default function MedicalRecordDetailPage() {
               </Popconfirm>
             ) : null}
             {canReject ? (
-              <Button danger icon={<XCircle size={17} />} onClick={() => setRejectOpen(true)}>
+              <Button className="shrink-0" danger icon={<XCircle size={17} />} onClick={() => setRejectOpen(true)}>
                 Từ chối
               </Button>
             ) : null}
             {canDelete ? (
               <Popconfirm title="Xóa vĩnh viễn bệnh án này?" onConfirm={() => deleteMutation.mutate()}>
-                <Button danger icon={<Trash2 size={17} />} loading={deleteMutation.isPending}>
+                <Button className="shrink-0" danger icon={<Trash2 size={17} />} loading={deleteMutation.isPending}>
                   Xóa
                 </Button>
               </Popconfirm>
             ) : null}
-          </>
+          </div>
         }
       >
-        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
           <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="border-b border-slate-100 p-5 lg:border-r lg:border-b-0">
               <div className="flex items-center justify-between gap-3">
@@ -371,7 +447,7 @@ export default function MedicalRecordDetailPage() {
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Tài liệu gốc</p>
                   <h2 className="mt-1 text-lg font-semibold text-slate-950">{record.fileName}</h2>
                 </div>
-                <ClipboardCheck className="text-indigo-500" size={24} />
+                <ClipboardCheck className="text-[#2563EB]" size={24} />
               </div>
               <div className="mt-5 overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
                 {imageUrl && !record.fileType.includes('pdf') ? (
@@ -574,7 +650,33 @@ export default function MedicalRecordDetailPage() {
                     key: 'audit',
                     label: 'Nhật ký thao tác',
                     children: (
-                      <Timeline
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Select<AuditTimeFilterMode>
+                            className="min-w-36"
+                            options={auditTimeFilterOptions}
+                            value={auditTimeMode}
+                            onChange={(mode) => setAuditTimeMode(mode)}
+                          />
+                          {auditTimeMode !== 'all' && auditTimeMode !== 'today' && auditTimeMode !== 'range' ? (
+                            <DatePicker
+                              className="w-40"
+                              picker={auditTimeMode === 'month' || auditTimeMode === 'year' ? auditTimeMode : 'date'}
+                              value={auditAnchorDate}
+                              format={auditTimeMode === 'year' ? 'YYYY' : auditTimeMode === 'month' ? 'MM/YYYY' : 'DD/MM/YYYY'}
+                              onChange={(value) => setAuditAnchorDate(value ?? dayjs())}
+                            />
+                          ) : null}
+                          {auditTimeMode === 'range' ? (
+                            <RangePicker
+                              className="w-72"
+                              value={auditRangeDates}
+                              format="DD/MM/YYYY"
+                              onChange={(values) => setAuditRangeDates(values ? [values[0], values[1]] as [Dayjs | null, Dayjs | null] : null)}
+                            />
+                          ) : null}
+                        </div>
+                        <Timeline
                         pending={auditLogsQuery.isLoading ? 'Đang tải lịch sử...' : false}
                         items={(auditLogsQuery.data?.items ?? []).map((log) => ({
                           color: log.action === 'REJECT' ? 'red' : log.action === 'APPROVE' ? 'green' : 'blue',
@@ -597,7 +699,8 @@ export default function MedicalRecordDetailPage() {
                             </div>
                           ),
                         }))}
-                      />
+                        />
+                      </div>
                     ),
                   },
                 ]}

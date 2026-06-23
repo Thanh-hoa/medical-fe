@@ -25,11 +25,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(99,102,241,0.18),transparent_28%),linear-gradient(135deg,#f8fafc,#ecfeff_48%,#f8fafc)] px-4 py-10">
+    <main className="min-h-screen bg-[#F7F9FC] px-4 py-10">
       <section className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center">
-        <div className="grid w-full overflow-hidden rounded-[34px] border border-white/70 bg-white/80 shadow-[0_32px_100px_-48px_rgba(15,23,42,0.55)] backdrop-blur-xl lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="grid w-full overflow-hidden rounded-xl border border-[#E5EAF1] bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)] lg:grid-cols-[0.95fr_1.05fr]">
           <div className="relative hidden min-h-[620px] overflow-hidden bg-slate-950 p-10 text-white lg:block">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_22%,rgba(45,212,191,0.38),transparent_28%),radial-gradient(circle_at_78%_72%,rgba(99,102,241,0.4),transparent_30%)]" />
+            
             <div className="relative z-10 flex h-full flex-col justify-between">
               <div>
                 <div className="grid size-14 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
 
           <div className="flex items-center justify-center px-5 py-10 sm:px-10">
             <div className="w-full max-w-md">
-              <Link to="/login" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600">
+              <Link to="/login" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#2563EB]">
                 <ArrowLeft size={16} />
                 Quay lại đăng nhập
               </Link>
