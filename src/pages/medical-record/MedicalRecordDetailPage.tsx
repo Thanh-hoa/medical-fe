@@ -29,6 +29,7 @@ import type { AuditLogFilters, AuditLogPeriod } from '../../types/auditLog.types
 import {
   normalizeRecordStatus,
   type ExtractedData,
+  type LabResult,
   type MedicalRecordDetail,
   type UpdateMedicalRecordDetailPayload,
 } from '../../types/medicalRecord.types'
@@ -39,6 +40,7 @@ type EditFormValues = {
   notes?: string
   patient?: {
     bhyt?: string
+    citizenId?: string
     name?: string
     dob?: string
     gender?: string
@@ -59,6 +61,13 @@ const ocrLabels: Record<string, string> = {
   signerName: 'Người ký',
   diagnosis: 'Chẩn đoán',
 }
+
+const hiddenOcrFields = new Set([
+  'template_id',
+  'sample_collector',
+  'sample_receiver',
+  'sample_status',
+])
 
 const { RangePicker } = DatePicker
 const API_DATE_FORMAT = 'YYYY-MM-DD'
@@ -97,17 +106,20 @@ function normalizeExtractedData(data: ExtractedData | null) {
 
   const rows = Object.entries(data)
     .filter(([key]) => key !== 'extra')
+    .filter(([key]) => !hiddenOcrFields.has(key))
     .map(([fieldName, fieldValue]) => ({
       fieldName,
       label: ocrLabels[fieldName] ?? fieldName,
       fieldValue: typeof fieldValue === 'string' ? fieldValue : '',
     }))
 
-  const extraRows = Object.entries(data.extra ?? {}).map(([fieldName, fieldValue]) => ({
-    fieldName,
-    label: fieldName,
-    fieldValue,
-  }))
+  const extraRows = Object.entries(data.extra ?? {})
+    .filter(([fieldName]) => !hiddenOcrFields.has(fieldName))
+    .map(([fieldName, fieldValue]) => ({
+      fieldName,
+      label: fieldName,
+      fieldValue,
+    }))
 
   return [...rows, ...extraRows]
 }
@@ -118,7 +130,8 @@ function buildInitialValues(record: MedicalRecordDetail): EditFormValues {
     recordType: record.recordType ?? undefined,
     notes: record.notes ?? undefined,
     patient: {
-      bhyt: record.patient?.bhyt,
+      bhyt: record.patient?.bhyt ?? undefined,
+      citizenId: record.patient?.citizenId ?? undefined,
       name: record.patient?.name,
       dob: record.patient?.dob ?? undefined,
       gender: record.patient?.gender ?? undefined,
@@ -135,14 +148,17 @@ function buildInitialValues(record: MedicalRecordDetail): EditFormValues {
 }
 
 function buildUpdatePayload(record: MedicalRecordDetail, values: EditFormValues): UpdateMedicalRecordDetailPayload {
-  const patient = values.patient?.bhyt && values.patient?.name
+  const patientValues = values.patient
+  const patientName = patientValues?.name?.trim()
+  const patient = patientName
     ? {
-        bhyt: values.patient.bhyt,
-        name: values.patient.name,
-        dob: values.patient.dob || null,
-        gender: values.patient.gender || null,
-        address: values.patient.address || null,
-        phone: values.patient.phone || null,
+        name: patientName,
+        bhyt: patientValues?.bhyt?.trim() || null,
+        citizenId: patientValues?.citizenId?.trim() || null,
+        dob: patientValues?.dob || null,
+        gender: patientValues?.gender || null,
+        address: patientValues?.address || null,
+        phone: patientValues?.phone || null,
       }
     : undefined
 
@@ -160,6 +176,10 @@ function buildUpdatePayload(record: MedicalRecordDetail, values: EditFormValues)
   }
 }
 
+function hasPatientIdentifier(record?: MedicalRecordDetail | null) {
+  return Boolean(record?.patient && (record.patient.bhyt?.trim() || record.patient.citizenId?.trim()))
+}
+
 export default function MedicalRecordDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -170,6 +190,8 @@ export default function MedicalRecordDetailPage() {
   const { message } = App.useApp()
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
+  const [editingLabIndex, setEditingLabIndex] = useState<number | null>(null)
+  const [labDraft, setLabDraft] = useState<LabResult | null>(null)
   const [diagnosisDraft, setDiagnosisDraft] = useState('')
   const [editOpen, setEditOpen] = useState(false)
   const [editForm] = Form.useForm<EditFormValues>()
@@ -206,6 +228,21 @@ export default function MedicalRecordDetailPage() {
 
   const record = recordQuery.data
 
+  const openPatientIdentifierEditor = () => {
+    if (!record) return
+    editForm.setFieldsValue(buildInitialValues(record))
+    setEditOpen(true)
+    window.setTimeout(() => editForm.scrollToField(['patient', 'bhyt']), 0)
+  }
+
+  const ensurePatientIdentifier = () => {
+    if (hasPatientIdentifier(record)) return true
+
+    message.warning('Vui lòng nhập số BHYT hoặc CCCD trước khi gửi bệnh án cho bác sĩ duyệt')
+    openPatientIdentifierEditor()
+    return false
+  }
+
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: ['record', id] })
     await queryClient.invalidateQueries({ queryKey: ['record', id, 'audit-logs'] })
@@ -220,7 +257,13 @@ export default function MedicalRecordDetailPage() {
       message.success('Đã gửi bệnh án để bác sĩ duyệt')
       await invalidate()
     },
-    onError: (error: any) => message.error(error?.response?.data?.message ?? 'Gửi duyệt thất bại'),
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message
+      message.error(apiMessage ?? 'Gửi duyệt thất bại')
+      if (apiMessage === 'record.submit.patient_identifier_required' || apiMessage?.includes('BHYT hoặc CCCD')) {
+        openPatientIdentifierEditor()
+      }
+    },
   })
 
   const approveMutation = useMutation({
@@ -250,7 +293,13 @@ export default function MedicalRecordDetailPage() {
       message.success('Đã nộp lại bệnh án')
       await invalidate()
     },
-    onError: (error: any) => message.error(error?.response?.data?.message ?? 'Nộp lại thất bại'),
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message
+      message.error(apiMessage ?? 'Nộp lại thất bại')
+      if (apiMessage === 'record.submit.patient_identifier_required' || apiMessage?.includes('BHYT hoặc CCCD')) {
+        openPatientIdentifierEditor()
+      }
+    },
   })
 
   const updateDetailMutation = useMutation({
@@ -279,6 +328,27 @@ export default function MedicalRecordDetailPage() {
       await invalidate()
     },
     onError: (error: any) => message.error(error?.response?.data?.message ?? 'Cập nhật trường thất bại'),
+  })
+
+  const updateLabMutation = useMutation({
+    mutationFn: (payload: { index: number; lab: LabResult }) => {
+      if (!record) throw new Error('Không có dữ liệu bệnh án')
+
+      const nextLabData = [...(record.labData ?? [])]
+      nextLabData[payload.index] = payload.lab
+
+      return medicalRecordApi.updateDetail({
+        id: record.id,
+        labData: nextLabData,
+      })
+    },
+    onSuccess: async () => {
+      message.success('Đã cập nhật xét nghiệm')
+      setEditingLabIndex(null)
+      setLabDraft(null)
+      await invalidate()
+    },
+    onError: (error: any) => message.error(error?.response?.data?.message ?? 'Cập nhật xét nghiệm thất bại'),
   })
 
   const approveWithDiagnosisMutation = useMutation({
@@ -392,7 +462,9 @@ export default function MedicalRecordDetailPage() {
                 type="primary"
                 icon={<Send size={17} />}
                 loading={submitMutation.isPending}
-                onClick={() => submitMutation.mutate()}
+                onClick={() => {
+                  if (ensurePatientIdentifier()) submitMutation.mutate()
+                }}
               >
                 Gửi duyệt
               </Button>
@@ -401,7 +473,9 @@ export default function MedicalRecordDetailPage() {
               <Popconfirm
                 title="Nộp lại bệnh án?"
                 description="Hồ sơ sẽ quay lại trạng thái chờ bác sĩ duyệt."
-                onConfirm={() => resubmitMutation.mutate()}
+                onConfirm={() => {
+                  if (ensurePatientIdentifier()) resubmitMutation.mutate()
+                }}
               >
                 <Button className="shrink-0" type="primary" icon={<RotateCcw size={17} />} loading={resubmitMutation.isPending}>
                   Nộp lại
@@ -440,8 +514,8 @@ export default function MedicalRecordDetailPage() {
         }
       >
         <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
-          <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="border-b border-slate-100 p-5 lg:border-r lg:border-b-0">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)]">
+            <div className="min-w-0 border-b border-slate-100 p-5 lg:border-r lg:border-b-0">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Tài liệu gốc</p>
@@ -451,9 +525,9 @@ export default function MedicalRecordDetailPage() {
               </div>
               <div className="mt-5 overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
                 {imageUrl && !record.fileType.includes('pdf') ? (
-                  <img src={imageUrl} alt={record.fileName} className="max-h-[70vh] w-full object-contain" />
+                  <img src={imageUrl} alt={record.fileName} className="max-h-[78vh] w-full object-contain" />
                 ) : imageUrl ? (
-                  <iframe src={imageUrl} title={record.fileName} className="h-[70vh] w-full border-0" />
+                  <iframe src={imageUrl} title={record.fileName} className="h-[78vh] w-full border-0" />
                 ) : (
                   <div className="grid min-h-96 place-items-center text-sm text-slate-400">
                     Backend chưa trả đường dẫn file gốc.
@@ -462,7 +536,7 @@ export default function MedicalRecordDetailPage() {
               </div>
             </div>
 
-            <div className="p-5">
+            <div className="min-w-0 p-5">
               {recordStatus === 'REJECTED' && record.rejectionReason ? (
                 <Alert
                   className="mb-5"
@@ -478,6 +552,22 @@ export default function MedicalRecordDetailPage() {
                         </p>
                       ) : null}
                     </div>
+                  }
+                />
+              ) : null}
+              {(recordStatus === 'EXTRACTED' || recordStatus === 'REJECTED') && !hasPatientIdentifier(record) ? (
+                <Alert
+                  className="mb-5"
+                  type="warning"
+                  showIcon
+                  message="Chưa có BHYT hoặc CCCD"
+                  description="Bệnh án vẫn có thể lưu/chỉnh sửa, nhưng cần bổ sung BHYT hoặc CCCD trước khi gửi bác sĩ duyệt."
+                  action={
+                    canOpenEdit ? (
+                      <Button size="small" onClick={openPatientIdentifierEditor}>
+                        Bổ sung
+                      </Button>
+                    ) : undefined
                   }
                 />
               ) : null}
@@ -533,6 +623,7 @@ export default function MedicalRecordDetailPage() {
                       <Descriptions bordered column={1} size="small">
                         <Descriptions.Item label="Họ tên">{record.patient?.name ?? '-'}</Descriptions.Item>
                         <Descriptions.Item label="BHYT">{record.patient?.bhyt ?? '-'}</Descriptions.Item>
+                        <Descriptions.Item label="CCCD">{record.patient?.citizenId ?? '-'}</Descriptions.Item>
                         <Descriptions.Item label="Ngày sinh">
                           {record.patient?.dob ? new Date(record.patient.dob).toLocaleDateString('vi-VN') : '-'}
                         </Descriptions.Item>
@@ -630,17 +721,112 @@ export default function MedicalRecordDetailPage() {
                     children: (
                       <Table
                         rowKey={(item) => `${item.testName}-${item.testValue}-${item.unit}`}
+                        tableLayout="fixed"
                         pagination={false}
+                        scroll={{ x: 860 }}
                         dataSource={record.labData}
-                        rowClassName={(item) => (item.isAbnormal ? '!bg-red-50' : '')}
                         columns={[
-                          { title: 'Xét nghiệm', dataIndex: 'testName' },
-                          { title: 'Giá trị', dataIndex: 'testValue' },
-                          { title: 'Đơn vị', dataIndex: 'unit' },
-                          { title: 'Khoảng tham chiếu', dataIndex: 'referenceRange' },
                           {
-                            title: 'Đánh dấu',
-                            render: (_, item) => (item.isAbnormal ? <span className="text-red-600">Bất thường</span> : 'Bình thường'),
+                            title: 'Xét nghiệm',
+                            dataIndex: 'testName',
+                            width: 260,
+                            render: (value, _item, index) =>
+                              editingLabIndex === index && labDraft ? (
+                                <Input
+                                  className="w-full"
+                                  value={labDraft.testName}
+                                  onChange={(event) => setLabDraft({ ...labDraft, testName: event.target.value })}
+                                />
+                              ) : (
+                                value
+                              ),
+                          },
+                          {
+                            title: 'Giá trị',
+                            dataIndex: 'testValue',
+                            width: 120,
+                            render: (value, _item, index) =>
+                              editingLabIndex === index && labDraft ? (
+                                <Input
+                                  className="w-full"
+                                  value={labDraft.testValue}
+                                  onChange={(event) => setLabDraft({ ...labDraft, testValue: event.target.value })}
+                                />
+                              ) : (
+                                value
+                              ),
+                          },
+                          {
+                            title: 'Đơn vị',
+                            dataIndex: 'unit',
+                            width: 120,
+                            render: (value, _item, index) =>
+                              editingLabIndex === index && labDraft ? (
+                                <Input
+                                  className="w-full"
+                                  value={labDraft.unit}
+                                  onChange={(event) => setLabDraft({ ...labDraft, unit: event.target.value })}
+                                />
+                              ) : (
+                                value
+                              ),
+                          },
+                          {
+                            title: 'Khoảng tham chiếu',
+                            dataIndex: 'referenceRange',
+                            width: 190,
+                            render: (value, _item, index) =>
+                              editingLabIndex === index && labDraft ? (
+                                <Input
+                                  className="w-full"
+                                  value={labDraft.referenceRange}
+                                  onChange={(event) => setLabDraft({ ...labDraft, referenceRange: event.target.value })}
+                                />
+                              ) : (
+                                value
+                              ),
+                          },
+                          {
+                            title: 'Thao tác',
+                            width: 170,
+                            render: (_, item, index) =>
+                              canOpenEdit ? (
+                                editingLabIndex === index ? (
+                                  <div className="flex items-center gap-2 whitespace-nowrap">
+                                    <Button
+                                      type="link"
+                                      loading={updateLabMutation.isPending}
+                                      disabled={!labDraft}
+                                      onClick={() => {
+                                        if (!labDraft) return
+                                        updateLabMutation.mutate({ index, lab: labDraft })
+                                      }}
+                                    >
+                                      Lưu
+                                    </Button>
+                                    <Button
+                                      type="link"
+                                      onClick={() => {
+                                        setEditingLabIndex(null)
+                                        setLabDraft(null)
+                                      }}
+                                    >
+                                      Hủy
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    type="link"
+                                    disabled={editingLabIndex !== null}
+                                    onClick={() => {
+                                      setEditingLabIndex(index)
+                                      setLabDraft({ ...item })
+                                    }}
+                                  >
+                                    Sửa nhanh
+                                  </Button>
+                                )
+                              ) : null,
                           },
                         ]}
                       />
@@ -737,7 +923,10 @@ export default function MedicalRecordDetailPage() {
           </Form.Item>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Form.Item name={['patient', 'bhyt']} label="Mã BHYT" rules={[{ required: true, message: 'Nhập mã BHYT' }]}>
+            <Form.Item name={['patient', 'bhyt']} label="Mã BHYT">
+              <Input />
+            </Form.Item>
+            <Form.Item name={['patient', 'citizenId']} label="CCCD">
               <Input />
             </Form.Item>
             <Form.Item name={['patient', 'name']} label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>

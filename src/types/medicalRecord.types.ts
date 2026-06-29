@@ -97,8 +97,9 @@ export interface UpdateMedicalRecordDetailPayload {
   recordType?: string | null
   notes?: string | null
   patient?: {
-    bhyt: string
     name: string
+    bhyt?: string | null
+    citizenId?: string | null
     dob?: string | null
     gender?: string | null
     address?: string | null

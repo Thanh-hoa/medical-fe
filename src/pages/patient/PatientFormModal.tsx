@@ -5,6 +5,7 @@ import type { Patient, UpsertPatientPayload } from '../../types/patient.types'
 
 interface PatientFormValues {
   bhyt: string
+  citizenId: string
   name: string
   dob?: Dayjs | null
   gender?: string | null
@@ -44,6 +45,7 @@ export default function PatientFormModal({
 
     form.setFieldsValue({
       bhyt: patient?.bhyt ?? '',
+      citizenId: patient?.citizenId ?? '',
       name: patient?.name ?? '',
       dob: patient?.dob ? dayjs(patient.dob) : null,
       gender: patient?.gender ?? null,
@@ -56,8 +58,9 @@ export default function PatientFormModal({
     const values = await form.validateFields()
 
     onSubmit({
-      bhyt: values.bhyt.trim(),
       name: values.name.trim(),
+      bhyt: nullableText(values.bhyt),
+      citizenId: nullableText(values.citizenId),
       dob: values.dob ? values.dob.format('YYYY-MM-DD') : null,
       gender: nullableText(values.gender),
       address: nullableText(values.address),
@@ -80,12 +83,12 @@ export default function PatientFormModal({
         <Form.Item
           label="Số thẻ BHYT"
           name="bhyt"
-          rules={[
-            { required: true, message: 'Vui lòng nhập số thẻ BHYT' },
-            { whitespace: true, message: 'Số thẻ BHYT không được để trống' },
-          ]}
         >
           <Input placeholder="VD: GD4030000123456" />
+        </Form.Item>
+
+        <Form.Item label="CCCD" name="citizenId">
+          <Input placeholder="VD: 079201000001" />
         </Form.Item>
 
         <Form.Item

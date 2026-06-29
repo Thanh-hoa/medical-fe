@@ -13,8 +13,8 @@ export const patientApi = {
   list(params: PatientListFilters): Promise<AxiosResponse<JsonResponse<PagedResponse<Patient>>>> {
     return apiClient.get('/patient/list', { params })
   },
-  searchByBhyt(bhyt: string): Promise<AxiosResponse<JsonResponse<PatientWithRecords>>> {
-    return apiClient.get('/patient/search', { params: { bhyt } })
+  searchByIdentifier(identifier: string): Promise<AxiosResponse<JsonResponse<PatientWithRecords>>> {
+    return apiClient.get('/patient/search', { params: { identifier } })
   },
   create(payload: UpsertPatientPayload): Promise<AxiosResponse<JsonResponse<Patient>>> {
     return apiClient.post('/patient/create', payload)

@@ -87,23 +87,62 @@ function ActionBadge({ action, label }: { action: string; label?: string | null 
   )
 }
 
-function JsonPanel({ label, value }: { label: string; value: string | null }) {
-  const text = (() => {
-    if (!value) return null
-    try {
-      return JSON.stringify(JSON.parse(value), null, 2)
-    } catch {
-      return value
+function humanizeKey(key: string) {
+  return key
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function stringifyValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '-'
+  if (typeof value === 'boolean') return value ? 'Có' : 'Không'
+  if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (Array.isArray(value)) return value.map(stringifyValue).join(', ')
+  if (typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([key, item]) => `${humanizeKey(key)}: ${stringifyValue(item)}`)
+      .join('; ')
+  }
+  return String(value)
+}
+
+function parseAuditValue(value: string | null) {
+  if (!value) return []
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return Object.entries(parsed as Record<string, unknown>).map(([key, item]) => ({
+        label: humanizeKey(key),
+        value: stringifyValue(item),
+      }))
     }
-  })()
+
+    return [{ label: 'Giá trị', value: stringifyValue(parsed) }]
+  } catch {
+    return [{ label: 'Giá trị', value }]
+  }
+}
+
+function ValuePanel({ label, value }: { label: string; value: string | null }) {
+  const rows = parseAuditValue(value)
 
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">{label}</p>
-      {text ? (
-        <pre className="max-h-72 min-h-[60px] overflow-auto rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">
-          {text}
-        </pre>
+      {rows.length ? (
+        <div className="max-h-72 min-h-[60px] overflow-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="space-y-3">
+            {rows.map((row) => (
+              <div key={`${row.label}-${row.value}`} className="grid gap-1 sm:grid-cols-[140px_1fr]">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{row.label}</p>
+                <p className="break-words text-sm font-medium text-slate-800">{row.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="flex min-h-[60px] items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-400">
           —
@@ -159,29 +198,29 @@ function DetailModal({ id, onClose }: { id: number; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-950/45" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <div className="relative overflow-hidden bg-slate-950 px-7 py-6">
+        <div className="relative overflow-hidden border-b border-slate-200 bg-[#F7F9FC] px-7 py-6">
           <div className="relative flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="grid size-11 place-items-center rounded-2xl bg-white/10">
-                <Icon size={20} className="text-white" />
+              <div className="grid size-11 place-items-center rounded-2xl bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0]">
+                <Icon size={20} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Chi tiết nhật ký</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563EB]">Chi tiết nhật ký</p>
                 {data ? (
-                  <h2 className="mt-0.5 text-lg font-bold text-white">
+                  <h2 className="mt-0.5 text-lg font-bold text-slate-950">
                     {data.actionLabel ?? data.action}{' '}
-                    <span className="font-normal text-slate-400">#{data.id}</span>
+                    <span className="font-normal text-slate-500">#{data.id}</span>
                   </h2>
                 ) : (
-                  <div className="mt-1 h-5 w-40 animate-pulse rounded-lg bg-white/10" />
+                  <div className="mt-1 h-5 w-40 animate-pulse rounded-lg bg-slate-200" />
                 )}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="grid size-9 place-items-center rounded-2xl text-slate-400 transition hover:bg-white/10 hover:text-white"
+              className="grid size-9 place-items-center rounded-2xl text-slate-400 transition hover:bg-white hover:text-slate-700"
             >
               ✕
             </button>
@@ -232,11 +271,11 @@ function DetailModal({ id, onClose }: { id: number; onClose: () => void }) {
             </Descriptions>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
-              <JsonPanel label="Old Value" value={data.oldValue} />
+              <ValuePanel label="Giá trị cũ" value={data.oldValue} />
               <div className="flex h-full items-center justify-center pt-7">
                 <ArrowRight size={18} className="text-slate-300" />
               </div>
-              <JsonPanel label="New Value" value={data.newValue} />
+              <ValuePanel label="Giá trị mới" value={data.newValue} />
             </div>
           </div>
         )}
@@ -297,7 +336,7 @@ function TimelineBar() {
       {entries.map((m) => (
         <div key={m.label} className="flex shrink-0 items-center gap-1.5">
           <span className={cn('size-2 rounded-full', m.dot)} />
-          <span className="text-xs text-slate-400">{m.label}</span>
+          <span className="text-xs text-slate-500">{m.label}</span>
         </div>
       ))}
     </div>
@@ -357,20 +396,20 @@ export default function AuditLogPage() {
     >
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,41,0.04)]">
         {/* ── Header panel ── */}
-        <div className="relative overflow-hidden bg-slate-950 px-7 py-6">
+        <div className="relative overflow-hidden border-b border-[#DDE6F3] bg-[#F7F9FC] px-7 py-6">
 
           <div className="relative grid gap-6 lg:grid-cols-[auto_1fr]">
             {/* stat block */}
             <div className="flex items-center gap-5">
-              <div className="grid size-14 place-items-center rounded-2xl bg-white/10">
-                <History size={24} className="text-white" />
+              <div className="grid size-14 place-items-center rounded-2xl bg-[#EFF6FF] text-[#2563EB] ring-1 ring-[#C9D6F0]">
+                <History size={24} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Tổng log</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#64748B]">Tổng log</p>
                 {isLoading ? (
-                  <div className="mt-1 h-8 w-20 animate-pulse rounded-lg bg-white/10" />
+                  <div className="mt-1 h-8 w-20 animate-pulse rounded-lg bg-slate-200" />
                 ) : (
-                  <p className="mt-1 text-4xl font-bold text-white">{(data?.totalItems ?? 0).toLocaleString('vi-VN')}</p>
+                  <p className="mt-1 text-4xl font-bold text-slate-950">{(data?.totalItems ?? 0).toLocaleString('vi-VN')}</p>
                 )}
                 <TimelineBar />
               </div>

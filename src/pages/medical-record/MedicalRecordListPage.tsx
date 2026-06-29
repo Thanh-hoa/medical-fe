@@ -18,6 +18,28 @@ const statusOptions = [
   { value: 'REJECTED', label: 'Bị từ chối' },
 ]
 
+function PatientIdentifier({ patient }: { patient: MedicalRecordSummary['patient'] }) {
+  if (patient?.bhyt) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <Tag color="blue" className="m-0">BHYT</Tag>
+        <span>{patient.bhyt}</span>
+      </span>
+    )
+  }
+
+  if (patient?.citizenId) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <Tag color="geekblue" className="m-0">CCCD</Tag>
+        <span>{patient.citizenId}</span>
+      </span>
+    )
+  }
+
+  return <span>-</span>
+}
+
 export default function MedicalRecordListPage() {
   const navigate = useNavigate()
   const canCreate = usePermission('medical-records:create')
@@ -143,7 +165,10 @@ export default function MedicalRecordListPage() {
                 ),
               },
               { title: 'Bệnh nhân', render: (_, record) => record.patient?.name ?? 'Chưa liên kết' },
-              { title: 'BHYT', render: (_, record) => record.patient?.bhyt ?? '-' },
+              {
+                title: 'Định danh',
+                render: (_, record) => <PatientIdentifier patient={record.patient} />,
+              },
               {
                 title: 'Phân loại',
                 render: (_, record) => (
