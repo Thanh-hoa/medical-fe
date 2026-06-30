@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App, Button, Empty, Input, Space, Table, Tag } from 'antd'
+import { App, Button, Empty, Input, Space, Table } from 'antd'
 import { CalendarDays, Edit3, FileSearch, Plus, Search, ShieldPlus, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { patientApi } from '../../api/patient.api'
@@ -16,6 +16,10 @@ function formatDate(value?: string | null) {
 function getApiMessage(error: unknown, fallback: string) {
   const apiError = error as { response?: { data?: { message?: string } } }
   return apiError.response?.data?.message ?? fallback
+}
+
+function getPatientIdentifier(patient: Patient) {
+  return patient.bhyt || patient.citizenId || ''
 }
 
 export default function PatientListPage() {
@@ -82,7 +86,7 @@ export default function PatientListPage() {
   return (
     <PageShell
       title="Quản lý bệnh nhân"
-      description="Tìm kiếm, tạo mới và cập nhật hồ sơ bệnh nhân theo số thẻ BHYT duy nhất."
+      description="Tìm kiếm, tạo mới và cập nhật hồ sơ bệnh nhân theo tên, số BHYT hoặc CCCD."
       actions={
         canCreate ? (
           <Button type="primary" size="large" icon={<Plus size={18} />} onClick={() => setModalState({ mode: 'create' })}>
@@ -129,7 +133,7 @@ export default function PatientListPage() {
             <Input
               allowClear
               prefix={<Search size={16} className="text-slate-400" />}
-              placeholder="Tìm theo tên hoặc số BHYT"
+              placeholder="Tìm theo tên, số BHYT hoặc CCCD"
               value={draftSearch}
               onChange={(event) => setDraftSearch(event.target.value)}
               onPressEnter={() => submitSearch()}
@@ -179,7 +183,10 @@ export default function PatientListPage() {
                     <button
                       type="button"
                       className="block max-w-[180px] whitespace-normal break-words text-left font-semibold leading-6 text-slate-950 transition hover:text-[#2563EB]"
-                      onClick={() => navigate(`/patients/detail?bhyt=${encodeURIComponent(item.bhyt)}`)}
+                      onClick={() => {
+                        const identifier = getPatientIdentifier(item)
+                        if (identifier) navigate(`/patients/detail?identifier=${encodeURIComponent(identifier)}`)
+                      }}
                     >
                       {value}
                     </button>
@@ -190,7 +197,12 @@ export default function PatientListPage() {
               {
                 title: 'BHYT',
                 dataIndex: 'bhyt',
-                render: (value: string) => <Tag color="blue">{value}</Tag>,
+                render: (value: string | null) => value ?? '-',
+              },
+              {
+                title: 'CCCD',
+                dataIndex: 'citizenId',
+                render: (value: string | null) => value ?? '-',
               },
               { title: 'Ngày sinh', dataIndex: 'dob', render: formatDate },
               { title: 'Giới tính', dataIndex: 'gender', render: (value: string | null) => value ?? '-' },
@@ -209,7 +221,11 @@ export default function PatientListPage() {
                     <Button
                       className="w-32 justify-center"
                       icon={<FileSearch size={15} />}
-                      onClick={() => navigate(`/patients/detail?bhyt=${encodeURIComponent(item.bhyt)}`)}
+                      disabled={!getPatientIdentifier(item)}
+                      onClick={() => {
+                        const identifier = getPatientIdentifier(item)
+                        if (identifier) navigate(`/patients/detail?identifier=${encodeURIComponent(identifier)}`)
+                      }}
                     >
                       Chi tiết
                     </Button>

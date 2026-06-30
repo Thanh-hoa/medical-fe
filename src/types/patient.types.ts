@@ -1,6 +1,7 @@
 export interface Patient {
   id: number
-  bhyt: string
+  bhyt: string | null
+  citizenId: string | null
   name: string
   dob: string | null
   gender: string | null
@@ -32,7 +33,8 @@ export interface PatientListFilters {
 }
 
 export interface UpsertPatientPayload {
-  bhyt: string
+  bhyt?: string | null
+  citizenId?: string | null
   name: string
   dob?: string | null
   gender?: string | null

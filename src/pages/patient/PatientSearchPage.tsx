@@ -26,13 +26,13 @@ export default function PatientSearchPage() {
   const { message } = App.useApp()
   const canEdit = usePermission('patient-search:edit')
   const [searchParams, setSearchParams] = useSearchParams()
-  const [submittedBhyt, setSubmittedBhyt] = useState(searchParams.get('bhyt') ?? '')
+  const [submittedIdentifier, setSubmittedIdentifier] = useState(searchParams.get('identifier') ?? searchParams.get('bhyt') ?? '')
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
 
   const { data, isError, error } = useQuery({
-    enabled: Boolean(submittedBhyt),
-    queryKey: ['patient-search', submittedBhyt],
-    queryFn: () => patientApi.searchByBhyt(submittedBhyt).then((response) => response.data.data),
+    enabled: Boolean(submittedIdentifier),
+    queryKey: ['patient-search', submittedIdentifier],
+    queryFn: () => patientApi.searchByIdentifier(submittedIdentifier).then((response) => response.data.data),
     retry: false,
   })
 
@@ -42,9 +42,9 @@ export default function PatientSearchPage() {
     onSuccess: async (response) => {
       message.success(response.data.message || 'Cập nhật bệnh nhân thành công')
       setEditingPatient(null)
-      const nextBhyt = response.data.data.bhyt
-      setSubmittedBhyt(nextBhyt)
-      setSearchParams({ bhyt: nextBhyt })
+      const nextIdentifier = response.data.data.bhyt || response.data.data.citizenId || submittedIdentifier
+      setSubmittedIdentifier(nextIdentifier)
+      setSearchParams({ identifier: nextIdentifier })
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['patient-search'] }),
         queryClient.invalidateQueries({ queryKey: ['patients'] }),
@@ -55,14 +55,14 @@ export default function PatientSearchPage() {
 
   const emptyDescription = isError
     ? getApiMessage(error, 'Không tìm thấy bệnh nhân phù hợp.')
-    : submittedBhyt
+    : submittedIdentifier
       ? 'Không tìm thấy bệnh nhân phù hợp.'
-      : 'Nhập số thẻ BHYT để bắt đầu tra cứu.'
+      : 'Nhập số BHYT hoặc CCCD để bắt đầu tra cứu.'
 
   return (
     <PageShell
       title="Chi tiết bệnh nhân"
-      description="Tra cứu theo số thẻ BHYT, xem thông tin bệnh nhân và lịch sử bệnh án liên quan."
+      description="Tra cứu theo số BHYT hoặc CCCD, xem thông tin bệnh nhân và lịch sử bệnh án liên quan."
       actions={
         <Button icon={<UsersRound size={17} />} onClick={() => navigate('/patients')}>
           Quay lại danh sách
@@ -87,7 +87,8 @@ export default function PatientSearchPage() {
                 </div>
 
                 <Descriptions className="mt-5" bordered column={{ xs: 1, md: 2 }}>
-                  <Descriptions.Item label="BHYT">{data.patient.bhyt}</Descriptions.Item>
+                  <Descriptions.Item label="BHYT">{data.patient.bhyt ?? '-'}</Descriptions.Item>
+                  <Descriptions.Item label="CCCD">{data.patient.citizenId ?? '-'}</Descriptions.Item>
                   <Descriptions.Item label="Giới tính">{data.patient.gender ?? '-'}</Descriptions.Item>
                   <Descriptions.Item label="Ngày sinh">{formatDate(data.patient.dob)}</Descriptions.Item>
                   <Descriptions.Item label="Số điện thoại">{data.patient.phone ?? '-'}</Descriptions.Item>
@@ -96,7 +97,7 @@ export default function PatientSearchPage() {
                   </Descriptions.Item>
                 </Descriptions>
               </div>
-            ) : submittedBhyt || isError ? (
+            ) : submittedIdentifier || isError ? (
               <div className="mt-6 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-10">
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} />
               </div>

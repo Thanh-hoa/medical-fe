@@ -8,6 +8,28 @@ import StatusBadge from '../../components/StatusBadge'
 import { medicalRecordApi } from '../../api/medicalRecord.api'
 import type { MedicalRecordSummary } from '../../types/medicalRecord.types'
 
+function PatientIdentifier({ patient }: { patient: MedicalRecordSummary['patient'] }) {
+  if (patient?.bhyt) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <Tag color="blue" className="m-0">BHYT</Tag>
+        <span>{patient.bhyt}</span>
+      </span>
+    )
+  }
+
+  if (patient?.citizenId) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <Tag color="geekblue" className="m-0">CCCD</Tag>
+        <span>{patient.citizenId}</span>
+      </span>
+    )
+  }
+
+  return <span>-</span>
+}
+
 export default function MedicalRecordApprovalPage() {
   const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', page: 1, limit: 10 })
@@ -75,7 +97,10 @@ export default function MedicalRecordApprovalPage() {
                 ),
               },
               { title: 'Bệnh nhân', render: (_, record) => record.patient?.name ?? 'Chưa liên kết' },
-              { title: 'BHYT', render: (_, record) => record.patient?.bhyt ?? '-' },
+              {
+                title: 'Định danh',
+                render: (_, record) => <PatientIdentifier patient={record.patient} />,
+              },
               {
                 title: 'Thông tin hồ sơ',
                 render: (_, record) => (
