@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   CheckSquare,
   ClipboardList,
+  FileSearch,
   History,
   LayoutDashboard,
   PanelLeftClose,
@@ -22,6 +23,7 @@ const menuIconMap: Record<string, typeof LayoutDashboard> = {
   'medical-records': ClipboardList,
   'medical-records-approval': CheckSquare,
   'patient-search': Users,
+  'patient-self': FileSearch,
 }
 
 const menuLabelMap: Record<string, string> = {
@@ -31,6 +33,7 @@ const menuLabelMap: Record<string, string> = {
   'medical-records': 'Hồ sơ bệnh án',
   'medical-records-approval': 'Phê duyệt bệnh án',
   'patient-search': 'Quản lý bệnh nhân',
+  'patient-self': 'Bệnh án của tôi',
 }
 
 function RolePill({ role }: { role: string | null }) {

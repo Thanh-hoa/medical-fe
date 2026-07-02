@@ -29,6 +29,9 @@ function normalizeRole(user: AccountInfo | null): AppRole | null {
     employee: 'employee',
     'nhan vien': 'employee',
     'nhân viên': 'employee',
+    patient: 'patient',
+    'benh nhan': 'patient',
+    'bệnh nhân': 'patient',
   }
 
   return roleNameMap[rawRole] ?? null

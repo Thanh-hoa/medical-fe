@@ -20,6 +20,8 @@ const MedicalRecordListPage = lazy(() => import('../pages/medical-record/Medical
 const MedicalRecordUploadPage = lazy(() => import('../pages/medical-record/MedicalRecordUploadPage'))
 const PatientListPage = lazy(() => import('../pages/patient/PatientListPage'))
 const PatientSearchPage = lazy(() => import('../pages/patient/PatientSearchPage'))
+const PatientSelfRecordDetailPage = lazy(() => import('../pages/patient/PatientSelfRecordDetailPage'))
+const PatientSelfLookupPage = lazy(() => import('../pages/patient/PatientSelfLookupPage'))
 const PrescriptionPage = lazy(() => import('../pages/prescription/PrescriptionPage'))
 
 function RouteFallback() {
@@ -65,6 +67,10 @@ export const router = createBrowserRouter([
     element: lazyPage(ValidateTokenPage),
   },
   {
+    path: '/verify-email',
+    element: lazyPage(ValidateTokenPage),
+  },
+  {
     element: <PrivateRoute />,
     children: [
       {
@@ -102,6 +108,13 @@ export const router = createBrowserRouter([
               { path: '/patients', element: lazyPage(PatientListPage) },
               { path: '/patients/detail', element: lazyPage(PatientSearchPage) },
               { path: '/patients/search', element: <Navigate to="/patients/detail" replace /> },
+            ],
+          },
+          {
+            element: <PermissionRoute permission="patient-self:view" />,
+            children: [
+              { path: '/my-medical-records', element: lazyPage(PatientSelfLookupPage) },
+              { path: '/my-medical-records/:id', element: lazyPage(PatientSelfRecordDetailPage) },
             ],
           },
           {

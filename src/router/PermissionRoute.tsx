@@ -11,7 +11,7 @@ export default function PermissionRoute({ permission }: { permission?: string })
   }
 
   if (!allowed) {
-    return <Navigate to={firstMenuPath ?? '/login'} replace />
+    return <Navigate to={firstMenuPath ?? '/profile'} replace />
   }
 
   return <Outlet />

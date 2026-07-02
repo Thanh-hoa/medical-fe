@@ -1,3 +1,5 @@
+import type { ExtractedData, LabResult } from './medicalRecord.types'
+
 export interface Patient {
   id: number
   bhyt: string | null
@@ -24,6 +26,21 @@ export interface PatientWithRecords {
   patient: Patient
   records: PatientRecordSummary[]
   totalRecords: number
+}
+
+export interface PatientRecordDetail {
+  id: number
+  recordNumber: string
+  status: string
+  department: string | null
+  recordType: string | null
+  fileName: string | null
+  fileType: string | null
+  createdAt: string
+  updatedAt: string | null
+  patient: Patient
+  extractedData: ExtractedData | null
+  labData: LabResult[]
 }
 
 export interface PatientListFilters {

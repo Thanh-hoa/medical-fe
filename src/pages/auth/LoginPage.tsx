@@ -6,13 +6,38 @@ import { authApi } from '../../api/auth.api'
 import { accountApi } from '../../api/account.api'
 import { configApi } from '../../api/config.api'
 import { useAuthStore } from '../../store/auth.store'
-import type { LoginPayload } from '../../types/auth.types'
+import type { AccountInfo } from '../../types/account.types'
+import type { LoginPayload, PermissionMenuItem } from '../../types/auth.types'
 
 const features = [
   { icon: UploadCloud, title: 'Tải hồ sơ OCR', text: 'Kéo thả ảnh hoặc PDF, theo dõi xử lý và chỉnh sửa dữ liệu OCR ngay trên web.' },
   { icon: Stethoscope, title: 'Bác sĩ phê duyệt', text: 'Bác sĩ kiểm tra, phê duyệt hoặc từ chối bệnh án có lý do rõ ràng.' },
   { icon: ShieldCheck, title: 'Phân quyền rõ ràng', text: 'Sidebar, route và thao tác bám theo menu phân quyền thực tế từ backend.' },
 ]
+
+function isPatientAccount(user: AccountInfo) {
+  return user.roles?.some((role) => {
+    const roleName = role.name.toLowerCase()
+    return roleName === 'patient' || roleName === 'benh nhan' || roleName === 'bệnh nhân'
+  })
+}
+
+function ensurePatientSelfMenu(menu: PermissionMenuItem[], user: AccountInfo): PermissionMenuItem[] {
+  if (!isPatientAccount(user) || menu.some((item) => item.key === 'patient-self')) {
+    return menu
+  }
+
+  return [
+    ...menu,
+    {
+      id: -1,
+      key: 'patient-self',
+      label: 'Bệnh án của tôi',
+      path: '/my-medical-records',
+      actions: ['view'],
+    },
+  ]
+}
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -32,10 +57,13 @@ export default function LoginPage() {
         accountApi.getProfile(),
         configApi.getPermissionMenu(),
       ])
-      setUser(profileResponse.data.data)
-      setMenu(menuResponse.data.data)
+      const user = profileResponse.data.data
+      const menu = ensurePatientSelfMenu(menuResponse.data.data, user)
 
-      navigate('/dashboard', { replace: true })
+      setUser(user)
+      setMenu(menu)
+
+      navigate(menu[0]?.path ?? '/profile', { replace: true })
     } catch (error: any) {
       message.error(error?.response?.data?.message ?? 'Đăng nhập thất bại')
     } finally {
