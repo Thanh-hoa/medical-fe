@@ -20,6 +20,7 @@ const MedicalRecordListPage = lazy(() => import('../pages/medical-record/Medical
 const MedicalRecordUploadPage = lazy(() => import('../pages/medical-record/MedicalRecordUploadPage'))
 const PatientListPage = lazy(() => import('../pages/patient/PatientListPage'))
 const PatientSearchPage = lazy(() => import('../pages/patient/PatientSearchPage'))
+const PatientSelfRecordDetailPage = lazy(() => import('../pages/patient/PatientSelfRecordDetailPage'))
 const PatientSelfLookupPage = lazy(() => import('../pages/patient/PatientSelfLookupPage'))
 const PrescriptionPage = lazy(() => import('../pages/prescription/PrescriptionPage'))
 
@@ -111,7 +112,10 @@ export const router = createBrowserRouter([
           },
           {
             element: <PermissionRoute permission="patient-self:view" />,
-            children: [{ path: '/my-medical-records', element: lazyPage(PatientSelfLookupPage) }],
+            children: [
+              { path: '/my-medical-records', element: lazyPage(PatientSelfLookupPage) },
+              { path: '/my-medical-records/:id', element: lazyPage(PatientSelfRecordDetailPage) },
+            ],
           },
           {
             element: <PermissionRoute permission="accounts:view" />,

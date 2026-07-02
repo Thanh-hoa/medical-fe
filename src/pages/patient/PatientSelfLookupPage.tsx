@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import { patientApi } from '../../api/patient.api'
 import PageShell from '../../components/PageShell'
 import StatusBadge from '../../components/StatusBadge'
-import { usePermission } from '../../hooks/usePermission'
 import { normalizeRecordStatus } from '../../types/medicalRecord.types'
 import type { PatientRecordSummary } from '../../types/patient.types'
 
@@ -32,7 +31,6 @@ function isIdentifierRequired(error: unknown) {
 export default function PatientSelfLookupPage() {
   const navigate = useNavigate()
   const { message } = App.useApp()
-  const canOpenRecord = usePermission('medical-records:view')
 
   const initialQuery = useQuery({
     queryKey: ['patient-me'],
@@ -141,6 +139,10 @@ export default function PatientSelfLookupPage() {
                 rowKey="id"
                 pagination={false}
                 dataSource={data.records}
+                onRow={(item) => ({
+                  onClick: () => navigate(`/my-medical-records/${item.id}`),
+                  className: 'cursor-pointer',
+                })}
                 locale={{
                   emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Bạn chưa có bệnh án." />,
                 }}
@@ -148,18 +150,18 @@ export default function PatientSelfLookupPage() {
                   {
                     title: 'Mã bệnh án',
                     dataIndex: 'recordNumber',
-                    render: (value: string, item) =>
-                      canOpenRecord ? (
-                        <button
-                          type="button"
-                          className="font-semibold text-slate-950 transition hover:text-[#2563EB]"
-                          onClick={() => navigate(`/medical-records/${item.id}`)}
-                        >
-                          {value}
-                        </button>
-                      ) : (
-                        <span className="font-semibold text-slate-950">{value}</span>
-                      ),
+                    render: (value: string, item) => (
+                      <button
+                        type="button"
+                        className="font-semibold text-slate-950 transition hover:text-[#2563EB]"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          navigate(`/my-medical-records/${item.id}`)
+                        }}
+                      >
+                        {value}
+                      </button>
+                    ),
                   },
                   { title: 'Khoa', dataIndex: 'department', render: (value: string | null) => value ?? '-' },
                   { title: 'Người ký', dataIndex: 'signerName', render: (value: string | null) => value ?? '-' },
@@ -174,19 +176,21 @@ export default function PatientSelfLookupPage() {
                     dataIndex: 'status',
                     render: (status: string) => <StatusBadge status={normalizeRecordStatus(status)} />,
                   },
-                  ...(canOpenRecord
-                    ? [
-                        {
-                          title: 'Thao tác',
-                          width: 150,
-                          render: (_: unknown, item: PatientRecordSummary) => (
-                            <Button icon={<FileText size={15} />} onClick={() => navigate(`/medical-records/${item.id}`)}>
-                              Mở hồ sơ
-                            </Button>
-                          ),
-                        },
-                      ]
-                    : []),
+                  {
+                    title: 'Thao tác',
+                    width: 150,
+                    render: (_, item) => (
+                      <Button
+                        icon={<FileText size={15} />}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          navigate(`/my-medical-records/${item.id}`)
+                        }}
+                      >
+                        Mở hồ sơ
+                      </Button>
+                    ),
+                  },
                 ]}
               />
             </div>
