@@ -59,7 +59,7 @@ export default function Header() {
               type="button"
               className="flex items-center gap-3 rounded-xl border border-[#E5EAF1] bg-[#F7F9FC] px-3 py-2 text-left transition hover:border-[#C9D6F0] hover:bg-[#EFF6FF]"
             >
-              <Avatar src={user?.photoUrl} icon={<UserRound size={16} />} />
+              <Avatar src={user?.photoUrl || undefined} icon={<UserRound size={16} />} />
               <div className="hidden sm:block">
                 <p className="text-sm font-medium text-slate-900">{user?.name ?? user?.email ?? 'Người dùng'}</p>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{role ?? 'unknown'}</p>

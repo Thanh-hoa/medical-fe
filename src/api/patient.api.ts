@@ -16,6 +16,12 @@ export const patientApi = {
   searchByIdentifier(identifier: string): Promise<AxiosResponse<JsonResponse<PatientWithRecords>>> {
     return apiClient.get('/patient/search', { params: { identifier } })
   },
+  getMe(identifier?: string): Promise<AxiosResponse<JsonResponse<PatientWithRecords>>> {
+    const normalizedIdentifier = identifier?.trim()
+    return apiClient.get('/patient/me', {
+      params: normalizedIdentifier ? { identifier: normalizedIdentifier } : undefined,
+    })
+  },
   create(payload: UpsertPatientPayload): Promise<AxiosResponse<JsonResponse<Patient>>> {
     return apiClient.post('/patient/create', payload)
   },

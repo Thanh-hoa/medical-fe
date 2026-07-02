@@ -24,7 +24,7 @@ export interface ResetPasswordPayload {
   repeat_password: string
 }
 
-export type AppRole = 'employee' | 'doctor' | 'admin'
+export type AppRole = 'employee' | 'doctor' | 'admin' | 'patient'
 
 export interface PermissionMenuItem {
   id: number
